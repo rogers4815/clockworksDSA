@@ -9,6 +9,7 @@ Clockworks distributed simulation app for android devices
   * [User Result Assembly](#user-result-assembly)
   * [Bot Interface Listener](#bot-interface-listener)
   * [Timer / Timeout Handlers](#timer--timeout-handlers)
+  * [Database Schema](#database-schema)
 * [Bot](#bot)
   * [Bot Network Interface](#bot-network-interface)
 * [API Spec](#api-spec)
@@ -35,8 +36,8 @@ Clockworks distributed simulation app for android devices
 * User authentication
 
 ### Shared variable accesses:
-* [Ping queue](#ping-queue): read
-* [Code queue](#code-queue): read/write
+* [Ping queue](#ping-queue): Pop off expired and read size
+* [Code queue](#code-queue): Check if full and add to Queue
 
 [Top](#contents)
 
@@ -71,22 +72,68 @@ Clockworks distributed simulation app for android devices
 * Result logging: write
 
 ### Shared variable accesses:
-* [Ping Queue](#ping-queue): write
-* [Code Queue](#code-queue): read
+* [Ping Queue](#ping-queue): Add to Queue
+* [Code Queue](#code-queue): Take off Queue if available
 
 [Top](#contents)
 
 ## Timer / Timeout handlers
 
-* One for each portion of the simulation
+* One for each process of the simulation
 
 ### Shared variable accesses:
 
-* [Code Queue](#code-queue): write 
+* [Code Queue](#code-queue): Add to Queue if time out reached 
 
 [Top](#contents)
 
 ![SNAIL](WikiImages/ServerNetworkAppInterfaceListenerSNAIL.jpeg?raw=true)
+
+## Database Schema
+### Authentication
+<table>
+ <tr>
+  <td>
+   Sample
+  </td>
+  <td>
+   Sample
+  </td>
+  <td>
+   Sample
+  </td>
+ </tr>
+</table>
+### Environment
+<table>
+ <tr>
+  <td>
+   Sample
+  </td>
+  <td>
+   Sample
+  </td>
+  <td>
+   Sample
+  </td>
+ </tr>
+</table>
+### Process
+<table>
+ <tr>
+  <td>
+   Sample
+  </td>
+  <td>
+   Sample
+  </td>
+  <td>
+   Sample
+  </td>
+ </tr>
+</table>
+
+[Top](#contents)
 
 # Bot
 
@@ -169,7 +216,17 @@ Sample
 
 ### RTO Ping Response:
 
-* None
+* 200: Success
+
+<code>
+Sample
+</code>
+
+* 404: Process Not Found
+
+<code>
+Sample
+</code>
 
 [Top](#contents)
 
@@ -187,6 +244,7 @@ Sample
 * Green: Data received
 * Red: Response sent
 * Blue: Database access
+* Black: Scary Stuff
 
 [Top](#contents)
 
