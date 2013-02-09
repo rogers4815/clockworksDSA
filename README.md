@@ -15,26 +15,27 @@ Clockworks distributed simulation app for android devices
   * [WOP Ping](#wop-ping)
   * [RTP Ping](#rtp-ping)
   * [Environment](#environment)
-  * [Process](#process)
 * [Appendix](#appendix)
   * [Flowchart Key](#flowchart-key)
+  * [Ping Queue](#ping-queue)
+  * [Code Queue](#code-queue)
 
 #Server
 
 ## User Environment Listener
 
-* Listen for environment simulations from users over HTTPS, authentication is optional
-* Examine Ping Queue (the number of devices that have pinged the server recently)
-* Examine Code Queue (the number of objects currently waiting to be distributed)
-* Split code based on number of available devices, (i.e. split amout is minimum of: pings received in the previous allowed window, space in queue and how much the code can be split) and add to code queue
-* Respond to users with rejects/acknowledgements
+* Listen for [environments](#environment) from users over HTTPS, authentication is optional
+* Get number of recent devices from [Ping Queue](#ping-queue).
+* Get space in [Code Queue](#code-queue).
+* Split code based on number of available devices, (i.e. split amout is minimum of: pings received in the previous allowed window, space in queue and how much the code can be split) and add to [code queue](#code-queue)
+* Respond to users with [rejects/acknowledgements](#environment-response)
 
 ### Database accesses:
 * User authentication
 
 ### Shared variable accesses:
-* Ping queue: read
-* Code queue: read/write
+* [Ping queue](#ping-queue): read
+* [Code queue](#code-queue): read/write
 
 [Top](#contents)
 
@@ -97,17 +98,19 @@ Clockworks distributed simulation app for android devices
 
 ## WOP Ping
 
+### WOP Ping Response:
+
 [Top](#contents)
 
 ## RTP Ping
+
+### RTP Ping Response:
 
 [Top](#contents)
 
 ## Environment
 
-[Top](#contents)
-
-## Process
+### Environment Response:
 
 [Top](#contents)
 
@@ -119,5 +122,13 @@ Clockworks distributed simulation app for android devices
 * Green: Data received
 * Red: Response sent
 * Blue: Database access
+
+[Top](#contents)
+
+## Ping Queue
+
+[Top](#contents)
+
+## Code Queue
 
 [Top](#contents)
