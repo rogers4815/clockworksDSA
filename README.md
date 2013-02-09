@@ -100,7 +100,37 @@ Clockworks distributed simulation app for android devices
 
 ## WOP Ping (Waiting On Process)
 
+* Sent from the user after every t seconds to check if the results have been collected
+
+<code>
+Sample here
+</code>
+
 ### WOP Ping Response:
+
+* 102: Process Not ready
+
+<code>
+Sample
+</code>
+
+* 200: Results
+
+<code>
+Sample
+</code>
+
+* 401: Authentication failure
+
+<code>
+Sample
+</code>
+
+* 404: Process not found
+
+<code>
+Sample
+</code>
 
 [Top](#contents)
 
@@ -115,13 +145,13 @@ Sample RTP Ping Here
 
 ### RTP Ping Response:
 
-* Response with code to run
+* 200: Response with code to run
 
 <code>
 Sample Response of this type here
 </code>
 
-* No code available at this time
+* 204: No code available at this time from Queue
 
 <code>
 Sample Response of this type here
@@ -132,6 +162,10 @@ Sample Response of this type here
 ## RTO Ping (Reset Time Out)
 
 * Tell the server to reset its process timer for the indicated process
+
+<code>
+Sample
+</code>
 
 ### RTO Ping Response:
 
@@ -158,8 +192,15 @@ Sample Response of this type here
 
 ## Ping Queue
 
+* On read:
+ * Pop expired pings of the top of the Queue and update size, then read size
+* On write:
+ * Simply add ping log to the Queue
+
 [Top](#contents)
 
 ## Code Queue
+
+* Standard Queue of code objects that allows the threads to operate concurrently
 
 [Top](#contents)
