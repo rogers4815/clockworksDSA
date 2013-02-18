@@ -2,16 +2,20 @@ package org.clockworks.dsa.server.singletons;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.clockworks.dsa.server.environment.EnvironmentSegment;
+
 /**
  *	Class wrapping a static singleton code queue object
+ *	Classes accessing:
+ *	- Environment
  */
 class CodeQueue{
 	
-	private ConcurrentLinkedQueue<CodeBlock> queue;
+	private ConcurrentLinkedQueue<EnvironmentSegment> queue;
 	private static CodeQueue singleton;
 
 	/**
-	 *	Static constructor
+	 *	Singleton accessor
 	 */
 	public static CodeQueue sharedInstance(){
 		if(singleton == null){
@@ -24,21 +28,21 @@ class CodeQueue{
 	 *	Private constructor
 	 */
 	private CodeQueue(){
-		queue = new ConcurrentLinkedQueue<CodeBlock>();
+		queue = new ConcurrentLinkedQueue<EnvironmentSegment>();
 	}
 
 	/**
 	 *	Enqueue a block of code
 	 */
-	public void addToQueue(CodeBlock codeblock){
+	public void addToQueue(EnvironmentSegment codeblock){
 		queue.add(codeblock);
 	}
 
 	/**
 	 * Dequeue a block of code
 	 */
-	public CodeBlock popFromQueue(){
-		return queue.pull();
+	public EnvironmentSegment popFromQueue(){
+		return queue.poll();
 	} 
 
 }

@@ -1,8 +1,13 @@
 package org.clockworks.dsa.server.singletons;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-class PingQueue{
+import org.clockworks.dsa.server.pings.RTPPing;
+/**
+ * List of classes accessing this singleton (KEEP UP TO DATE!!!)
+ * - Environment
+ *
+ */
+public class PingQueue{
 	
 	private static final int DEFAULT_VALID_DURATION = 30000;
 	private int validDuration;
@@ -41,7 +46,9 @@ class PingQueue{
 	 * 	@return remaining size of queue
 	 */
 	public int readSize(){
-		// TODO: pop the things
+		while(queue.peek().getAgeInMillis()>validDuration){
+			queue.poll();
+		}
 		return queue.size();
 	}
 
