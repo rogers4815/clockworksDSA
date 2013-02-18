@@ -21,12 +21,12 @@ public class EnvironmentSegment {
 		return null;
 	}
 	
-	public boolean insertResults(Object results){
+	public int insertResults(Object results){
 		if(this.results!=null){
-			return false;
+			return 409;
 		}else{
 			this.results = results;
-			return true;
+			return 200;
 		}
 	}
 	

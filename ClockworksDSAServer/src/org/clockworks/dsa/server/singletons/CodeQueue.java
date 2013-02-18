@@ -9,7 +9,7 @@ import org.clockworks.dsa.server.environment.EnvironmentSegment;
  *	Classes accessing:
  *	- Environment
  */
-class CodeQueue{
+public class CodeQueue{
 	
 	private ConcurrentLinkedQueue<EnvironmentSegment> queue;
 	private static CodeQueue singleton;
@@ -44,5 +44,9 @@ class CodeQueue{
 	public EnvironmentSegment popFromQueue(){
 		return queue.poll();
 	} 
+	
+	public boolean isEmpty(){
+		return queue.isEmpty();
+	}
 
 }

@@ -29,13 +29,17 @@ public class Environment {
 		return Arrays.copyOfRange(segments, first, last);
 	}
 	
-	public boolean completeSegmentWithResults(Object results, int id){
+	public int completeSegmentWithResults(Object results, int id){
 		for(int i= 0; i<segments.length; i++){
 			if(segments[i].getId()==id){
 				return segments[i].insertResults(results);
 			}
 		}
-		return false;
+		return 400;
+	}
+	
+	public int getId(){
+		return this.id;
 	}
 	
 	private boolean isComplete(){
