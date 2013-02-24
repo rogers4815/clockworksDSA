@@ -8,8 +8,12 @@ import org.clockworks.dsa.server.singletons.EnvironmentList;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+/**
+ * Handler listening for pings from user (WOPPings)
+ * Sends results if ready, responds with a not-ready message otherwise
+ *
+ */
 public class ResultAssemblyHandler implements HttpHandler {
-
 
 	@Override
 	public void handle(HttpExchange ping) throws IOException {
