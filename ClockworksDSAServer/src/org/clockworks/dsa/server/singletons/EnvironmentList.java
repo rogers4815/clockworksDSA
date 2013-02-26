@@ -4,12 +4,22 @@ import java.util.LinkedList;
 
 import org.clockworks.dsa.server.environment.Environment;
 
-
+/**
+ * Class wrapping the static singleton list of environments
+ * Classes accessing (add as relevant):
+ *  -	BotRequestHandler
+ *  -	EnvironmentHandler
+ *  -	ResultAssemblyHandler
+ *
+ */
 public class EnvironmentList {
 
 	private static EnvironmentList singleton;
 	private LinkedList<Environment> list;
 	
+	/**
+	 * Singleton accessor
+	 */
 	public static EnvironmentList sharedInstance(){
 		if(singleton==null){
 			singleton = new EnvironmentList();
@@ -17,9 +27,16 @@ public class EnvironmentList {
 		return singleton;
 	}
 	
+	/**
+	 * Private constructor
+	 */
 	private EnvironmentList() {
 		list = new LinkedList<Environment>();
 	}
+	
+	/**
+	 * Assorted synchronised public accessor methods
+	 */
 	
 	synchronized public Environment getEnvironmentById(int id){
 		for(Environment e : list){

@@ -12,11 +12,15 @@ import org.clockworks.dsa.server.singletons.PingQueue;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+/**
+ * Handler listening for pings from bot (RTP Pings)
+ *
+ */
 public class BotRequestHandler implements HttpHandler {
 
 	@Override
 	public void handle(HttpExchange request) throws IOException {
-		// if rtpPing
+		// if rtpPing, as opposed to Ï'm-not-ready ping
 		{
 			//if contains results i.e. POST
 			{
@@ -54,7 +58,7 @@ public class BotRequestHandler implements HttpHandler {
 				// respond 200
 			}
 		}
-		// else
+		// else, as in Í'm-not-ready ping
 		{
 			// Reset Process timer
 		}
