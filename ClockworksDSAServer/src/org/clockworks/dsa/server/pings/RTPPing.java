@@ -2,6 +2,11 @@ package org.clockworks.dsa.server.pings;
 
 import com.sun.net.httpserver.HttpExchange;
 
+/**
+ * Ready-to-process ping
+ * Ping that is sent from bot to server
+ *
+ */
 public class RTPPing {
 	
 	private long timestamp;
