@@ -30,5 +30,3 @@ def compute_pi(begin, end):
     for i in range(begin,end):
         result+=pi(i)[0]
     return result
-
-print(compute_pi(0, 1000))
