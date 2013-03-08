@@ -17,17 +17,38 @@ import com.sun.net.httpserver.HttpHandler;
 public class EnvironmentHandler implements HttpHandler {
 	
 	@Override
-	public void handle(HttpExchange ping) throws IOException {
-		// TODO look down
-		Environment env = new Environment(null,null); // Placeholder, extract these data from ping
-		// TODO look up
-		EnvironmentList.sharedInstance().addEnvironment(env);
-		EnvironmentSegment[] segments = env.getSegments(0, env.getSegmentCount());
-		for(EnvironmentSegment s : segments){
-			CodeQueue.sharedInstance().addToQueue(s);
+	public void handle(HttpExchange httpExchange) throws IOException {
+		int statusCode = 0;
+		String responseBody = "";
+		if(httpExchange.getRequestMethod().equalsIgnoreCase("POST")){
+			int envId;
+			do{
+				envId = (int)System.currentTimeMillis();
+			}while(EnvironmentList.sharedInstance().getEnvironmentById(envId)!=null);
+			
+			try{
+				
+				Environment env = new Environment(envId,httpExchange.getRequestBody());
+				EnvironmentList.sharedInstance().addEnvironment(env);
+				EnvironmentSegment[] segments = env.getSegments(0, env.getSegmentCount());
+				for(EnvironmentSegment s : segments){
+					CodeQueue.sharedInstance().addToQueue(s);
+				}
+				statusCode = 200;
+				responseBody = ""+envId;
+				
+			}catch(Exception e){
+				
+				statusCode = 400;
+			}
+
+		}else{
+			statusCode = 405;
 		}
-		// TODO respond to user with response, probably something containing the 
-		//	environment ID that the user can then use in WOPPings
+		httpExchange.sendResponseHeaders(statusCode, responseBody.length());
+		httpExchange.getResponseBody().write(responseBody.getBytes());
+		httpExchange.close();
+		
 	}
 
 }

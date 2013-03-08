@@ -1,10 +1,12 @@
 package org.clockworks.dsa.server.handlers;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.clockworks.dsa.server.environment.Environment;
 import org.clockworks.dsa.server.singletons.EnvironmentList;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -16,22 +18,50 @@ import com.sun.net.httpserver.HttpHandler;
 public class ResultAssemblyHandler implements HttpHandler {
 
 	@Override
-	public void handle(HttpExchange ping) throws IOException {
-		// TODO: get the environment id from the WOPPing
-		int environmentId = -321364540;
-		Environment environment = EnvironmentList.sharedInstance().getEnvironmentById(environmentId);
-		if(environment==null){
-			// 404 response not found
+	public void handle(HttpExchange httpExchange) throws IOException {
+		int statusCode = 0;
+		String responseBody = "";
+		Headers headers = httpExchange.getRequestHeaders();
+		List<String> environmentIdList = headers.get("Environment-Id");
+		
+		if(environmentIdList==null)
+		{
+			System.out.println("400: Missing required headers");
+			statusCode = 400;
+			responseBody = "Missing required headers.";
 		}else{
-			Object results = environment.returnAssembledResult();
-			if(results==null){
-				// 102 process not ready
-			}else{
-				// 200 all good return the stuff
-				EnvironmentList.sharedInstance().deleteEnvironment(environment);
+			
+			int environmentId = Integer.parseInt(environmentIdList.get(0));
+			
+			if(httpExchange.getRequestMethod().equalsIgnoreCase("GET"))
+			{
+				Environment environment = EnvironmentList.sharedInstance().getEnvironmentById(environmentId);
+				if(environment==null){
+					System.out.println("404: Environment not found");
+					statusCode = 404;
+					responseBody = "Environment not found";
+				}else{
+					String results = environment.returnAssembledResult();
+					if(results==null){
+						System.out.println("102: Process not ready");
+						statusCode = 102;
+						responseBody = "Process not ready";
+					}else{
+						statusCode = 200;
+						responseBody = results;
+						EnvironmentList.sharedInstance().deleteEnvironment(environment);
+					}
+				}
+			}
+			else{
+				System.out.println("405: Method not allowed");
+				statusCode = 405;
+				responseBody = "Method not allowed";
 			}
 		}
-		
+		httpExchange.sendResponseHeaders(statusCode, responseBody.length());
+		httpExchange.getResponseBody().write(responseBody.getBytes());
+		httpExchange.close();
 	}
 
 }
