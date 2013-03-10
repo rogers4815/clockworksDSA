@@ -2,7 +2,9 @@ package org.clockworks.dsa.server.environment;
 
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
+
 import org.clockworks.dsa.server.singletons.PingQueue;
 
 public class Environment {
@@ -16,7 +18,8 @@ public class Environment {
 	 * @param parameters
 	 * @param pythonScript Must be passed after applying .setReadOnly() on the file object
 	 */
-	public Environment(String[] parameters,File pythonScript){
+	public Environment(int id,InputStream inputFromHttp){
+		this.id = id;
 		int sizeOfPingQueue = PingQueue.sharedInstance().readSize();
 		// TODO a lot
 	}
@@ -45,7 +48,7 @@ public class Environment {
 	 * @param id
 	 * @return
 	 */
-	public int completeSegmentWithResults(Object results, int id){
+	public int completeSegmentWithResults(String results, int id){
 		for(int i= 0; i<segments.length; i++){
 			if(segments[i].getId()==id){
 				return segments[i].insertResults(results);
@@ -76,7 +79,7 @@ public class Environment {
 	 * segments combined
 	 * @return
 	 */
-	public Object returnAssembledResult(){
+	public String returnAssembledResult(){
 		if(!isComplete()){
 			return null;
 		}
