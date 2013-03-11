@@ -1,5 +1,5 @@
 package org.clockworks.dsa.application;
 
-public class PythonProcessor{
+public class PythonProcessor {
 
 }

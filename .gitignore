@@ -37,3 +37,6 @@ local.properties
 
 # PDT-specific
 .buildpath
+
+
+ClockworksDSAApplication/bin/**

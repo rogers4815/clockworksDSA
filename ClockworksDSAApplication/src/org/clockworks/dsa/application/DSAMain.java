@@ -6,11 +6,11 @@ public class DSAMain {
 	private String simulationResults, environmentID, segmentID;
 	private boolean done;
 	private ServerContacter requester;
-	private PythonProcessor processor;
+	private PythonService processor;
 	
 	public DSAMain(String server, Context context){
 		this.requester = new ServerContacter(server, context);
-		this.processor = new PythonProcessor();
+		this.processor = new PythonService();
 	}
 	
 	public void start(){
