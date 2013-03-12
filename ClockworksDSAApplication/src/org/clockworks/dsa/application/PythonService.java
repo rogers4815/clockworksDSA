@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 
 import com.example.clockworksdsaapplication.R;
@@ -15,8 +16,10 @@ public class PythonService extends Service {
 	public static final String TAG = "PythonService";
 
 	private NotificationManager mNM;
-	// Unique Identification Number for the Notification.
-	// We use it on Notification start, and to cancel it.
+	/*
+	 * Unique Identification Number for the Notification. We use it on
+	 * Notification start, and to cancel it.
+	 */
 	private int NOTIFICATION = R.string.local_service_started;
 
 	@Override
@@ -31,7 +34,7 @@ public class PythonService extends Service {
 	@Override
 	public void onDestroy() {
 		Log.d(TAG, "onDestroy()");
-		mNM.cancel(NOTIFICATION);
+		stop();
 	}
 
 	/**
@@ -81,5 +84,9 @@ public class PythonService extends Service {
 
 		// Send the notification.
 		mNM.notify(NOTIFICATION, notification);
+	}
+
+	protected void stop() {
+		mNM.cancel(NOTIFICATION);
 	}
 }

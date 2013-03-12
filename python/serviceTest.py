@@ -1,21 +1,15 @@
-import android
-import urllib
-import urllib2
+#!/usr/bin/env python
 
-droid = android.Android()
+import socket
 
-print("Computing Pi from 0 to 1000")
-import piSimulation
-pi=piSimulation.compute_pi(0,2000)
-print(pi)
+class DataSender:
+    def __init__(self, port=8080, host="localhost"):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect((host, port))
 
+    def send(self, str):
+        self.sock.sendall(str+"\n")
 
-
-mIntent = droid.getIntent().result
-Extras = mIntent["extras"]
-print(Extras)
-#Input = Extras["serialinput"]
-
-resultData = "Returned from SL4a Script!"
-droid.setResultString("result", resultData)
-#droid.setResultArray(Result_OK, Extras)
+sender = DataSender()
+sender.send("Test");
+sender.send("Other test");
