@@ -15,7 +15,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 
-import com.example.clockworksdsaapplication.R;
+import com.dummy.fooforandroid.R;
 import com.googlecode.android_scripting.IntentBuilders;
 
 public class MainActivity extends Activity {

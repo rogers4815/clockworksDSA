@@ -7,10 +7,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.Message;
 import android.util.Log;
 
-import com.example.clockworksdsaapplication.R;
+import com.dummy.fooforandroid.R;
 
 public class PythonService extends Service {
 	public static final String TAG = "PythonService";
