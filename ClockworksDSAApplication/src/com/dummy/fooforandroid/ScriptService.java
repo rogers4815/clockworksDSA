@@ -16,12 +16,20 @@
 
 package com.dummy.fooforandroid;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -33,7 +41,7 @@ import com.googlecode.android_scripting.BaseApplication;
 import com.googlecode.android_scripting.Constants;
 import com.googlecode.android_scripting.FeaturedInterpreters;
 import com.googlecode.android_scripting.FileUtils;
-import com.googlecode.android_scripting.ForegroundService;
+import com.dummy.fooforandroid.ForegroundService;
 import com.googlecode.android_scripting.Log;
 import com.googlecode.android_scripting.NotificationIdFactory;
 import com.googlecode.android_scripting.ScriptLauncher;
@@ -51,20 +59,31 @@ import com.googlecode.android_scripting.jsonrpc.RpcReceiverManager;
  * @author Manuel Naranjo (manuel@aircable.net)
  */
 public class ScriptService extends ForegroundService {
+
 	private final static int NOTIFICATION_ID = NotificationIdFactory.create();
 	private final CountDownLatch mLatch = new CountDownLatch(1);
 	private final IBinder mBinder;
 
 	private InterpreterConfiguration mInterpreterConfiguration;
 	private RpcReceiverManager mFacadeManager;
-    private AndroidProxy mProxy;
-    
+	private AndroidProxy mProxy;
+
+	private Notification mNotification = null;
+	private NotificationManager mNotificationManager;
+
+	/**
+	 * Communication with the service
+	 */
+	private ServerSocket serverSock;
+	private Socket sock;
+	private Thread thrd;
+
 	public class LocalBinder extends Binder {
 		public ScriptService getService() {
 			return ScriptService.this;
 		}
 	}
-	
+
 	public ScriptService() {
 		super(NOTIFICATION_ID);
 		mBinder = new LocalBinder();
@@ -80,13 +99,41 @@ public class ScriptService extends ForegroundService {
 		super.onCreate();
 		mInterpreterConfiguration = ((BaseApplication) getApplication())
 				.getInterpreterConfiguration();
+		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		Log.d("onDestroy()");
+
+		Log.d("Closing socket connections");
+		if (mProxy != null)
+			mProxy.shutdown();
+		Log.d("Script ended");
+
+		try {
+			if (sock != null) {
+				sock.close();
+				sock = null;
+			}
+			if (serverSock != null) {
+				serverSock.close();
+				serverSock = null;
+			}
+		} catch (IOException e) {
+			Log.d(e.toString());
+		}
 	}
 
 	@Override
 	public void onStart(Intent intent, final int startId) {
 		super.onStart(intent, startId);
+
+		handleNetwork();
+
 		String fileName = Script.getFileName(this);
-		
+
 		Interpreter interpreter = mInterpreterConfiguration
 				.getInterpreterForScript(fileName);
 		if (interpreter == null || !interpreter.isInstalled()) {
@@ -97,9 +144,7 @@ public class ScriptService extends ForegroundService {
 				i.putExtra(Constants.EXTRA_SCRIPT_PATH, fileName);
 				startActivity(i);
 			} else {
-				Log
-						.e(this, "Cannot find an interpreter for script "
-								+ fileName);
+				Log.e(this, "Cannot find an interpreter for script " + fileName);
 			}
 			stopSelf(startId);
 			return;
@@ -140,22 +185,27 @@ public class ScriptService extends ForegroundService {
 
 	RpcReceiverManager getRpcReceiverManager() throws InterruptedException {
 		mLatch.await();
-		if (mFacadeManager==null) { // Facade manage may not be available on startup.
-		mFacadeManager = mProxy.getRpcReceiverManagerFactory()
-		.getRpcReceiverManagers().get(0);
+		if (mFacadeManager == null) { // Facade manage may not be available on
+										// startup.
+			mFacadeManager = mProxy.getRpcReceiverManagerFactory()
+					.getRpcReceiverManagers().get(0);
 		}
 		return mFacadeManager;
 	}
 
 	@Override
 	protected Notification createNotification() {
-	    Notification notification =
-	        new Notification(R.drawable.script_logo_48, this.getString(R.string.local_service_label), System.currentTimeMillis());
-	    // This contentIntent is a noop.
-	    PendingIntent contentIntent = PendingIntent.getService(this, 0, new Intent(), 0);
-	    notification.setLatestEventInfo(this, this.getString(R.string.app_name), this.getString(R.string.local_service_label), contentIntent);
-	    notification.flags = Notification.FLAG_AUTO_CANCEL;
-		return notification;
+		mNotification = new Notification(R.drawable.script_logo_48,
+				this.getString(R.string.local_service_label),
+				System.currentTimeMillis());
+		// This contentIntent is a noop.
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+				new Intent(this, ScriptActivity.class), 0);
+		mNotification.setLatestEventInfo(this,
+				this.getString(R.string.app_name),
+				this.getString(R.string.local_service_label), contentIntent);
+		mNotification.flags = Notification.FLAG_AUTO_CANCEL;
+		return mNotification;
 	}
 
 	private boolean needsToBeUpdated(String filename, InputStream content) {
@@ -196,14 +246,13 @@ public class ScriptService extends ForegroundService {
 		for (int i = 0; i < t.length; i++) {
 			try {
 				name = resources.getText(t[i].getInt(a)).toString();
-				sFileName = name.substring(name.lastIndexOf('/') + 1, name
-						.length());
+				sFileName = name.substring(name.lastIndexOf('/') + 1,
+						name.length());
 				content = getResources().openRawResource(t[i].getInt(a));
 
 				// Copies script to internal memory only if changes were made
 				sFileName = InterpreterUtils.getInterpreterRoot(this)
-						.getAbsolutePath()
-						+ "/" + sFileName;
+						.getAbsolutePath() + "/" + sFileName;
 				if (needsToBeUpdated(sFileName, content)) {
 					Log.d("Copying from stream " + sFileName);
 					content.reset();
@@ -215,5 +264,62 @@ public class ScriptService extends ForegroundService {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	protected void handleNetwork() {
+		try {
+			if (serverSock == null) {
+				serverSock = new ServerSocket(8080);
+
+				thrd = new Thread(new Runnable() {
+					private BufferedReader r;
+					private BufferedWriter out;
+
+					public void run() {
+						Log.d("Waiting for socket...");
+						try {
+							sock = ScriptService.this.serverSock.accept();
+
+							Log.d("Accepted socket " + sock.getLocalAddress()
+									+ " " + sock.getLocalPort());
+							r = new BufferedReader(new InputStreamReader(sock
+									.getInputStream()));
+							out = new BufferedWriter(new OutputStreamWriter(
+									sock.getOutputStream()));
+
+							while (!Thread.interrupted()) {
+								final String data = r.readLine();
+								if (data != null) {
+									// do something in ui thread with the
+									// data var
+									Log.d("Data: " + data);
+									updateNotification(data);
+								}
+							}
+						} catch (IOException e) {
+						}
+					}
+				});
+				thrd.start();
+			}
+		} catch (IOException ioe) {
+			Log.e(ioe.toString());
+		}
+	}
+	
+	protected void updateNotification(String newText) {
+		PendingIntent contentIntent = PendingIntent
+				.getService(ScriptService.this, 0,
+						new Intent(), 0);
+		mNotification
+				.setLatestEventInfo(
+						ScriptService.this,
+						ScriptService.this
+								.getString(R.string.app_name),
+						newText, contentIntent);
+		mNotificationManager.notify(
+				ScriptService.super
+						.getNotificationId(),
+				mNotification);
 	}
 }

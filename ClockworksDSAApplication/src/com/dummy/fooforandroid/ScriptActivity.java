@@ -17,54 +17,79 @@
 package com.dummy.fooforandroid;
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
-
-import com.googlecode.android_scripting.Constants;
-import com.googlecode.android_scripting.facade.ActivityResultFacade;
-import com.googlecode.android_scripting.jsonrpc.RpcReceiverManager;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 /**
  * @author Alexey Reznichenko (alexey.reznichenko@gmail.com)
  */
 public class ScriptActivity extends Activity {
+	public static final String TAG = "ScriptActivity";
 
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    if (Constants.ACTION_LAUNCH_SCRIPT_FOR_RESULT.equals(getIntent().getAction())) {
-      setTheme(android.R.style.Theme_Dialog);
-      setContentView(R.layout.dialog);
-      ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-          ScriptService scriptService = ((ScriptService.LocalBinder) service).getService();
-          try {
-            RpcReceiverManager manager = scriptService.getRpcReceiverManager();
-            ActivityResultFacade resultFacade = manager.getReceiver(ActivityResultFacade.class);
-            resultFacade.setActivity(ScriptActivity.this);
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-          }
-        }
+	private Intent serviceIntent = null;
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-          // Ignore.
-        }
-      };
-      bindService(new Intent(this, ScriptService.class), connection, Context.BIND_AUTO_CREATE);
-      startService(new Intent(this, ScriptService.class));
-    } else {
-      ScriptApplication application = (ScriptApplication) getApplication();
-      if (application.readyToStart()) {
-        startService(new Intent(this, ScriptService.class));
-      }
-      finish();
-    }
-  }
+	private Button startSimulationButton;
+	private Button stopSimulationButton;
+
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		Log.d(TAG, "onCreate()");
+		setContentView(R.layout.activity_main);
+
+		serviceIntent = new Intent(ScriptActivity.this, ScriptService.class);
+
+		startSimulationButton = (Button) findViewById(R.id.startSimulationButton);
+		stopSimulationButton = (Button) findViewById(R.id.stopSimulationButton);
+
+		startSimulationButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				// Perform action on click
+				/*
+				 * if (Constants.ACTION_LAUNCH_SCRIPT_FOR_RESULT
+				 * .equals(getIntent().getAction())) {
+				 * 
+				 * ServiceConnection connection = new ServiceConnection() {
+				 * 
+				 * @Override public void onServiceConnected(ComponentName name,
+				 * IBinder service) { ScriptService scriptService =
+				 * ((ScriptService.LocalBinder) service) .getService(); try {
+				 * RpcReceiverManager manager = scriptService
+				 * .getRpcReceiverManager(); ActivityResultFacade resultFacade =
+				 * manager .getReceiver(ActivityResultFacade.class);
+				 * resultFacade.setActivity(ScriptActivity.this); } catch
+				 * (InterruptedException e) { throw new RuntimeException(e); } }
+				 * 
+				 * @Override public void onServiceDisconnected(ComponentName
+				 * name) { // Ignore. Log.d(TAG, "Service disconnected"); } };
+				 * bindService(serviceIntent, connection,
+				 * Context.BIND_AUTO_CREATE); startService(serviceIntent); }
+				 * else {
+				 */
+				ScriptApplication application = (ScriptApplication) getApplication();
+				if (application.readyToStart()) {
+					startService(serviceIntent);
+				}
+				// }
+			}
+		});
+
+		stopSimulationButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				stopService(serviceIntent);
+			}
+		});
+
+	}
+
+	@Override
+	public void onResume() {
+		Log.d(TAG, "onResume()");
+		super.onResume();
+		Log.d(TAG, "after super.onResume");
+	}
 }
