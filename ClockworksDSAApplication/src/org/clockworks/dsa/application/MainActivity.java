@@ -7,11 +7,14 @@ import android.app.Activity;
 import android.view.Menu;
 
 public class MainActivity extends Activity {
+	DSAMain go;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        go = new DSAMain("10.6.17.150", this);
+        go.start();
     }
 
     @Override

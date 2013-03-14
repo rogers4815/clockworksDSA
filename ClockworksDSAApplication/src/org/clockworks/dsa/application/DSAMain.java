@@ -2,7 +2,7 @@ package org.clockworks.dsa.application;
 
 import android.content.Context;
 
-public class DSAMain {
+public class DSAMain extends Thread{
 	private String simulationResults, environmentID, segmentID;
 	private boolean done;
 	private ServerContacter requester;
@@ -13,12 +13,12 @@ public class DSAMain {
 		this.processor = new PythonProcessor();
 	}
 	
-	public void start(){
+	public void run(){
 		done = false;
 		//discard any old results from last run
 		simulationResults = null;
-		environmentID = null;
-		segmentID = null;
+		environmentID = "123";
+		segmentID = "145";
 		while(!done){
 			while(!requester.onAllowedNetwork()){
 				try {
@@ -31,8 +31,8 @@ public class DSAMain {
 			
 			RTPResponse serverResponse = requester.sendRTPPing(simulationResults, environmentID, segmentID);
 			
-			String simulationPath = serverResponse.getSimulationFilePath();
-			if(simulationPath != null){
+			if(serverResponse.getResponseCode() == 200){
+				String simulationPath = serverResponse.getSimulationFilePath();
 				// TODO Create thread for processing the python script
 				boolean abort = false;
 				// TODO while not finished processing and abort is false
