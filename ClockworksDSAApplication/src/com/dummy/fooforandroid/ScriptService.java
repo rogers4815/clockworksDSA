@@ -17,13 +17,9 @@
 package com.dummy.fooforandroid;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
@@ -32,7 +28,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Binder;
 import android.os.IBinder;
 
@@ -40,23 +35,20 @@ import com.googlecode.android_scripting.AndroidProxy;
 import com.googlecode.android_scripting.BaseApplication;
 import com.googlecode.android_scripting.Constants;
 import com.googlecode.android_scripting.FeaturedInterpreters;
-import com.googlecode.android_scripting.FileUtils;
-import com.dummy.fooforandroid.ForegroundService;
 import com.googlecode.android_scripting.Log;
 import com.googlecode.android_scripting.NotificationIdFactory;
 import com.googlecode.android_scripting.ScriptLauncher;
 import com.googlecode.android_scripting.interpreter.Interpreter;
 import com.googlecode.android_scripting.interpreter.InterpreterConfiguration;
-import com.googlecode.android_scripting.interpreter.InterpreterUtils;
-import com.googlecode.android_scripting.interpreter.html.HtmlActivityTask;
-import com.googlecode.android_scripting.interpreter.html.HtmlInterpreter;
 import com.googlecode.android_scripting.jsonrpc.RpcReceiverManager;
 
 /**
- * A service that allows scripts and the RPC server to run in the background.
+ * Loosely based on Alexey and Manuel work. A service that allows scripts and
+ * the RPC server to run in the background.
  * 
  * @author Alexey Reznichenko (alexey.reznichenko@gmail.com)
  * @author Manuel Naranjo (manuel@aircable.net)
+ * @author Arnaud TANGUY
  */
 public class ScriptService extends ForegroundService {
 
@@ -77,6 +69,8 @@ public class ScriptService extends ForegroundService {
 	private ServerSocket serverSock;
 	private Socket sock;
 	private Thread thrd;
+
+	private Script mScript;
 
 	public class LocalBinder extends Binder {
 		public ScriptService getService() {
@@ -130,57 +124,47 @@ public class ScriptService extends ForegroundService {
 	public void onStart(Intent intent, final int startId) {
 		super.onStart(intent, startId);
 
+		String path = intent.getStringExtra("scriptPath");
+		Log.d("Script Path: " + path);
+		mScript = new Script(path);
+		Log.d("FileName: " + mScript.getFileName());
+		Log.d("FileExtension: " + mScript.getFileExtension());
+
 		handleNetwork();
 
-		String fileName = Script.getFileName(this);
-
 		Interpreter interpreter = mInterpreterConfiguration
-				.getInterpreterForScript(fileName);
+				.getInterpreterForScript(mScript.getFileName());
 		if (interpreter == null || !interpreter.isInstalled()) {
 			mLatch.countDown();
-			if (FeaturedInterpreters.isSupported(fileName)) {
+			if (FeaturedInterpreters.isSupported(mScript.getFileName())) {
+				Log.d("Is Supported");
 				Intent i = new Intent(this, DialogActivity.class);
 				i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				i.putExtra(Constants.EXTRA_SCRIPT_PATH, fileName);
+				i.putExtra(Constants.EXTRA_SCRIPT_PATH, mScript.getFileName());
 				startActivity(i);
 			} else {
-				Log.e(this, "Cannot find an interpreter for script " + fileName);
+				Log.e(this,
+						"Cannot find an interpreter for script "
+								+ mScript.getFileName());
 			}
 			stopSelf(startId);
 			return;
 		}
 
-		// Copies script to internal memory.
-		fileName = InterpreterUtils.getInterpreterRoot(this).getAbsolutePath()
-				+ "/" + fileName;
-		File script = new File(fileName);
-		// TODO(raaar): Check size here!
-		if (!script.exists()) {
-			script = FileUtils.copyFromStream(fileName, getResources()
-					.openRawResource(Script.ID));
-		}
-		copyResourcesToLocal(); // Copy all resources
+		File script = new File(path);
+		Log.d("Launch with proxy ");
 
-		if (Script.getFileExtension(this)
-				.equals(HtmlInterpreter.HTML_EXTENSION)) {
-			HtmlActivityTask htmlTask = ScriptLauncher.launchHtmlScript(script,
-					this, intent, mInterpreterConfiguration);
-			mFacadeManager = htmlTask.getRpcReceiverManager();
-			mLatch.countDown();
-			stopSelf(startId);
-		} else {
-			mProxy = new AndroidProxy(this, null, true);
-			mProxy.startLocal();
-			mLatch.countDown();
-			ScriptLauncher.launchScript(script, mInterpreterConfiguration,
-					mProxy, new Runnable() {
-						@Override
-						public void run() {
-							mProxy.shutdown();
-							stopSelf(startId);
-						}
-					});
-		}
+		mProxy = new AndroidProxy(this, null, true);
+		mProxy.startLocal();
+		mLatch.countDown();
+		ScriptLauncher.launchScript(script, mInterpreterConfiguration, mProxy,
+				new Runnable() {
+					@Override
+					public void run() {
+						mProxy.shutdown();
+						stopSelf(startId);
+					}
+				});
 	}
 
 	RpcReceiverManager getRpcReceiverManager() throws InterruptedException {
@@ -208,64 +192,6 @@ public class ScriptService extends ForegroundService {
 		return mNotification;
 	}
 
-	private boolean needsToBeUpdated(String filename, InputStream content) {
-		File script = new File(filename);
-		FileInputStream fin;
-		Log.d("Checking if " + filename + " exists");
-
-		if (!script.exists()) {
-			Log.d("not found");
-			return true;
-		}
-
-		Log.d("Comparing file with content");
-		try {
-			fin = new FileInputStream(filename);
-			int c;
-			while ((c = fin.read()) != -1) {
-				if (c != content.read()) {
-					Log.d("Something changed replacing");
-					return true;
-				}
-			}
-		} catch (Exception e) {
-			Log.d("Something failed during comparing");
-			Log.e(e);
-			return true;
-		}
-		Log.d("No need to update " + filename);
-		return false;
-	}
-
-	private void copyResourcesToLocal() {
-		String name, sFileName;
-		InputStream content;
-		R.raw a = new R.raw();
-		java.lang.reflect.Field[] t = R.raw.class.getFields();
-		Resources resources = getResources();
-		for (int i = 0; i < t.length; i++) {
-			try {
-				name = resources.getText(t[i].getInt(a)).toString();
-				sFileName = name.substring(name.lastIndexOf('/') + 1,
-						name.length());
-				content = getResources().openRawResource(t[i].getInt(a));
-
-				// Copies script to internal memory only if changes were made
-				sFileName = InterpreterUtils.getInterpreterRoot(this)
-						.getAbsolutePath() + "/" + sFileName;
-				if (needsToBeUpdated(sFileName, content)) {
-					Log.d("Copying from stream " + sFileName);
-					content.reset();
-					FileUtils.copyFromStream(sFileName, content);
-				}
-				FileUtils.chmod(new File(sFileName), 0755);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-
 	protected void handleNetwork() {
 		try {
 			if (serverSock == null) {
@@ -273,7 +199,7 @@ public class ScriptService extends ForegroundService {
 
 				thrd = new Thread(new Runnable() {
 					private BufferedReader r;
-					private BufferedWriter out;
+					//private BufferedWriter out;
 
 					public void run() {
 						Log.d("Waiting for socket...");
@@ -282,10 +208,10 @@ public class ScriptService extends ForegroundService {
 
 							Log.d("Accepted socket " + sock.getLocalAddress()
 									+ " " + sock.getLocalPort());
-							r = new BufferedReader(new InputStreamReader(sock
-									.getInputStream()));
-							out = new BufferedWriter(new OutputStreamWriter(
-									sock.getOutputStream()));
+							r = new BufferedReader(new InputStreamReader(
+									sock.getInputStream()));
+							//out = new BufferedWriter(new OutputStreamWriter(
+							//		sock.getOutputStream()));
 
 							while (!Thread.interrupted()) {
 								final String data = r.readLine();
@@ -306,20 +232,14 @@ public class ScriptService extends ForegroundService {
 			Log.e(ioe.toString());
 		}
 	}
-	
+
 	protected void updateNotification(String newText) {
-		PendingIntent contentIntent = PendingIntent
-				.getService(ScriptService.this, 0,
-						new Intent(), 0);
-		mNotification
-				.setLatestEventInfo(
-						ScriptService.this,
-						ScriptService.this
-								.getString(R.string.app_name),
-						newText, contentIntent);
-		mNotificationManager.notify(
-				ScriptService.super
-						.getNotificationId(),
+		PendingIntent contentIntent = PendingIntent.getService(
+				ScriptService.this, 0, new Intent(), 0);
+		mNotification.setLatestEventInfo(ScriptService.this,
+				ScriptService.this.getString(R.string.app_name), newText,
+				contentIntent);
+		mNotificationManager.notify(ScriptService.super.getNotificationId(),
 				mNotification);
 	}
 }

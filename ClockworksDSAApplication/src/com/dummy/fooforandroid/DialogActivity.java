@@ -42,7 +42,7 @@ public class DialogActivity extends Activity {
 				InterpreterConstants.ACTION_DISCOVER_INTERPRETERS);
 		resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 		resolveIntent.setType(InterpreterConstants.MIME
-				+ Script.getFileExtension(this));
+				+ ".py");//Script.getFileExtension(this));
 		List<ResolveInfo> resolveInfos = getPackageManager()
 				.queryIntentActivities(resolveIntent, 0);
 

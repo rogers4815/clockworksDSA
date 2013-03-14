@@ -19,12 +19,15 @@ package com.dummy.fooforandroid;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 /**
+ * Loosely based on Alexey code
  * @author Alexey Reznichenko (alexey.reznichenko@gmail.com)
+ * @author Arnaud TANGUY
  */
 public class ScriptActivity extends Activity {
 	public static final String TAG = "ScriptActivity";
@@ -42,6 +45,7 @@ public class ScriptActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		serviceIntent = new Intent(ScriptActivity.this, ScriptService.class);
+		serviceIntent.putExtra("scriptPath", Environment.getExternalStorageDirectory().getPath()+"/sl4a/scripts/returnTest.py");
 
 		startSimulationButton = (Button) findViewById(R.id.startSimulationButton);
 		stopSimulationButton = (Button) findViewById(R.id.stopSimulationButton);
@@ -90,6 +94,5 @@ public class ScriptActivity extends Activity {
 	public void onResume() {
 		Log.d(TAG, "onResume()");
 		super.onResume();
-		Log.d(TAG, "after super.onResume");
 	}
 }

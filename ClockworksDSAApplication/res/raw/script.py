@@ -17,7 +17,7 @@ class DataSender:
 sender = DataSender()
 
 droid = android.Android()
-droid.makeToast("Running script")
+#droid.makeToast("Running script")
 
 sender.send("Running script")
 
@@ -25,10 +25,9 @@ sender.send("Waiting 5 seconds")
 droid.makeToast("Waiting 5 seconds")
 time.sleep(5)
 
-
-#import piSimulation
-#droid.makeToast("Pi: " + str(piSimulation.compute_pi(0, 100)))
+import piSimulation
+droid.makeToast("Pi: " + str(piSimulation.compute_pi(0, 100)))
 
 droid.vibrate(300)
 
-sender.send("Script Finished")
+sender.send("Script Finished!")
