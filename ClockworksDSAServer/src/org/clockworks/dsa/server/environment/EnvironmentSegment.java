@@ -8,7 +8,7 @@ public class EnvironmentSegment {
 	private File pythonScript;
 	private int parentId;
 	private int id;
-	private Object results;
+	private String results;
 	
 	/**
 	 * Constructor
@@ -29,7 +29,7 @@ public class EnvironmentSegment {
 	 * the parameters relevant to this segment
 	 * @return
 	 */
-	public Object getUnifiedFile(){
+	public String getUnifiedFile(){
 		return null;
 	}
 	
@@ -38,7 +38,7 @@ public class EnvironmentSegment {
 	 * @param results
 	 * @return
 	 */
-	public int insertResults(Object results){
+	public int insertResults(String results){
 		if(this.results!=null){ // Where a duplicate has been received
 			return 409;
 		}else{
@@ -57,6 +57,10 @@ public class EnvironmentSegment {
 	
 	public int getId(){
 		return this.id;
+	}
+	
+	public int getParentId(){
+		return this.parentId;
 	}
 
 }

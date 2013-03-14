@@ -150,7 +150,11 @@ Clockworks distributed simulation app for android devices
 * Sent from the user after every t seconds to check if the results have been collected
 
 <code>
-Sample here
+GET /resultassemblyhandler HTTP/1.1</br>
+Host: www.example.com</br>
+Content-Type: text/plain-text; charset=utf-8</br>
+Content-Length: length</br>
+Environment-Id: 0
 </code>
 
 ### WOP Ping Response:
@@ -187,7 +191,13 @@ Sample
 * Expects response of a new process
 
 <code>
-Sample RTP Ping Here
+GET /botrequesthandler HTTP/1.1</br>
+Host: www.example.com</br>
+Content-Type: text/plain-text; charset=utf-8</br>
+Content-Length: length</br>
+Environment-Id: 0</br>
+Segment-Id: 0</br>
+May contain traces of results
 </code>
 
 ### RTP Ping Response:
@@ -211,7 +221,12 @@ Sample Response of this type here
 * Tell the server to reset its process timer for the indicated process
 
 <code>
-Sample
+POST /botrequesthandler HTTP/1.1</br>
+Host: www.example.com</br>
+Content-Type: text/plain-text; charset=utf-8</br>
+Content-Length: length</br>
+Environment-Id: 0</br>
+Segment-Id: 0
 </code>
 
 ### RTO Ping Response:
