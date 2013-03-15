@@ -17,8 +17,8 @@ public class DSAMain extends Thread{
 		done = false;
 		//discard any old results from last run
 		simulationResults = null;
-		environmentID = "123";
-		segmentID = "145";
+		environmentID = null;
+		segmentID = null;
 		while(!done){
 			while(!requester.onAllowedNetwork()){
 				try {
@@ -30,7 +30,12 @@ public class DSAMain extends Thread{
 			}
 			
 			RTPResponse serverResponse = requester.sendRTPPing(simulationResults, environmentID, segmentID);
-			
+			try {
+				Thread.sleep(30000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			if(serverResponse.getResponseCode() == 200){
 				String simulationPath = serverResponse.getSimulationFilePath();
 				// TODO Create thread for processing the python script

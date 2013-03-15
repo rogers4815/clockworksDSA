@@ -13,7 +13,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        go = new DSAMain("10.6.17.150", this);
+        go = new DSAMain("10.6.12.255", this);
         go.start();
     }
 

@@ -30,37 +30,40 @@ public class ServerContacter {
 			URL serverURL = new URL("http://" + server + ":50080/botrequesthandler"); //throws MalformedURLException
 			
 			//Send results onto server if they exist
+			
+			if(environmentID == null){
+				environmentID = "0";
+			}
+			
+			if(segmentID == null){
+				segmentID = "0";
+			}
+			
+			HttpURLConnection sendConnection = (HttpURLConnection) serverURL.openConnection(); //throws IOException
+			sendConnection.setReadTimeout(10000);
+			sendConnection.setRequestMethod("POST");
+			
+			//Can the server parse these back out properly?
+			sendConnection.addRequestProperty("Environment-Id", environmentID);
+			sendConnection.addRequestProperty("Segment-Id", segmentID);
+
+			OutputStream output = sendConnection.getOutputStream();
 			if(results != null){
-				HttpURLConnection sendConnection = (HttpURLConnection) serverURL.openConnection(); //throws IOException
-				
-				sendConnection.setRequestMethod("POST");
-				
-				//Can the server parse these back out properly?
-				sendConnection.addRequestProperty("Environment-Id", environmentID);
-				sendConnection.addRequestProperty("Segment-Id", segmentID);
-						
-				OutputStream output = sendConnection.getOutputStream();
-
 				byte[] byteResults = results.getBytes();
-
+				
 				//Send request to server
 				output.write(byteResults);
 				output.flush();
 
 				output.close();
 			}
-			//Send RTP ping requesting new simulation to run
-			HttpURLConnection receiveConnection = (HttpURLConnection) serverURL.openConnection();
-
-			receiveConnection.setRequestMethod("GET");
-	        receiveConnection.setReadTimeout(10000);
 	        
-	        receiveConnection.connect();
-	        int responseCode = receiveConnection.getResponseCode();
+	        sendConnection.connect();
+	        int responseCode = sendConnection.getResponseCode();
 	        Log.v("Response code", Integer.toString(responseCode));
 	        
 	        if(responseCode == 200){
-	        	InputStream input = receiveConnection.getInputStream();
+	        	InputStream input = sendConnection.getInputStream();
 		        
 		        byte[] in = null, result = null;
 
@@ -87,7 +90,7 @@ public class ServerContacter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+		return new RTPResponse(0, null);
 	}
 
 	//Send ping to server to reset ping
