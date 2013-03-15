@@ -36,14 +36,18 @@ public class EnvironmentHandler implements HttpHandler {
 				}
 				statusCode = 200;
 				responseBody = ""+envId;
+				System.out.println("200 : Environment recieved.");
 				
 			}catch(Exception e){
 				
 				statusCode = 400;
+				responseBody = "Environment error";
+				System.out.println("400 : Environment error");
 			}
 
 		}else{
 			statusCode = 405;
+			System.out.println("405 : Method not allowed");
 		}
 		httpExchange.sendResponseHeaders(statusCode, responseBody.length());
 		httpExchange.getResponseBody().write(responseBody.getBytes());
