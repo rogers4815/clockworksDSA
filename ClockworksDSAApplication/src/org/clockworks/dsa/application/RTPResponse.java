@@ -1,12 +1,22 @@
 package org.clockworks.dsa.application;
 
 public class RTPResponse {
-	public RTPResponse(byte[] response){
-		
+	private String[] response;
+	private String filePath;
+	private int responseCode;
+	
+	public RTPResponse(int responseCode, byte[] response){
+		if(response != null){
+			this.response = (new String(response)).split("\n");
+		}
+		this.responseCode = responseCode;
 	}
 
 	public String getSimulationFilePath() {
-		// TODO Auto-generated method stub
-		return null;
+		return filePath;
+	}
+	
+	public int getResponseCode(){
+		return responseCode;
 	}
 }

@@ -27,10 +27,11 @@ import com.sun.net.httpserver.HttpHandler;
 public class BotRequestHandler implements HttpHandler {
 	
 	private HashMap<String,BotRequestHandler.TimeOut> timers;
-	private final int timeoutDuration = 1000;
+	private final int timeoutDuration = 2000;
 	
 	@Override
 	public void handle(HttpExchange httpExchange) throws IOException {
+		
 		int statusCode = 0;
 		String responseBody = "";
 		Headers headers = httpExchange.getRequestHeaders();
@@ -47,15 +48,15 @@ public class BotRequestHandler implements HttpHandler {
 			int environmentId = Integer.parseInt(environmentIdList.get(0));
 			int segmentId = Integer.parseInt(segmentIdList.get(0));
 			
-			if(httpExchange.getRequestMethod().equalsIgnoreCase("GET"))
+			if(httpExchange.getRequestMethod().equalsIgnoreCase("POST"))
 			{
 				
 				if(environmentId!=0&&segmentId!=0)
 				{
-					
+					System.out.println("Looking for environment");
 					InputStream resultStream = httpExchange.getRequestBody();
 					String results = resultStream.toString();
-					deleteTimerForIds(environmentId, segmentId);
+					
 					
 					// log results to environment
 					Environment e = EnvironmentList.sharedInstance().getEnvironmentById(environmentId);
@@ -64,6 +65,7 @@ public class BotRequestHandler implements HttpHandler {
 						statusCode = 404;
 						responseBody = "Environment Not Found.";
 					}else{
+						
 						int resultInputStatusCode = e.completeSegmentWithResults(results, segmentId);
 						if(resultInputStatusCode==404){
 							System.out.println("404: Segment Not Found");
@@ -73,6 +75,8 @@ public class BotRequestHandler implements HttpHandler {
 							System.out.println("409: Clash of results");
 							statusCode = 409;
 							responseBody = "Clash of results.";
+						}else{
+							deleteTimerForIds(environmentId, segmentId);
 						}
 					}
 				}else if(environmentId!=0||segmentId!=0){
@@ -105,7 +109,7 @@ public class BotRequestHandler implements HttpHandler {
 					}
 				}
 			}
-			else if(httpExchange.getRequestMethod().equalsIgnoreCase("POST"))
+			else if(httpExchange.getRequestMethod().equalsIgnoreCase("GET"))
 			{
 				resetTimerForIds(environmentId, segmentId);
 			

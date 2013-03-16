@@ -1,9 +1,8 @@
 package org.clockworks.dsa.application;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -11,12 +10,13 @@ import java.net.URL;
 import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
 public class ServerContacter {
 	private String server;
 	private Context myContext;
 	WifiManager wifi;
-
+    public static final String TAG = "Results";
 	
 	public ServerContacter(String server, Context context){
 		this.server = server;
@@ -27,48 +27,60 @@ public class ServerContacter {
 	//Send RTP ping to server and fetch response
 	public RTPResponse sendRTPPing(String results, String environmentID, String segmentID){
 		try {
-			URL serverURL = new URL(server); //throws MalformedURLException
-			HttpURLConnection connection = (HttpURLConnection) serverURL.openConnection(); //throws IOException
+			URL serverURL = new URL("http://" + server + ":50080/botrequesthandler"); //throws MalformedURLException
 			
-			//Set connection for input and output
-			connection.setDoInput(true);
-			connection.setDoOutput(true);
+			//Send results onto server if they exist
+			
+			if(environmentID == null){
+				environmentID = "0";
+			}
+			
+			if(segmentID == null){
+				segmentID = "0";
+			}
+			
+			HttpURLConnection sendConnection = (HttpURLConnection) serverURL.openConnection(); //throws IOException
+			sendConnection.setReadTimeout(10000);
+			sendConnection.setRequestMethod("POST");
 			
 			//Can the server parse these back out properly?
-			connection.setRequestProperty("Environment-Id", environmentID);
-			connection.setRequestProperty("Segment-Id", segmentID);
-			
-			connection.setRequestMethod("GET");
-			connection.setReadTimeout(10000);
-			
-			//Setup OutputStream for sending requests to the server and InputStream for receiving
-			BufferedOutputStream output = new BufferedOutputStream(connection.getOutputStream());
-			BufferedInputStream input = new BufferedInputStream(connection.getInputStream());
-			
-			byte[] byteResults = results.getBytes();
-			
-			//Send request to server
-			output.write(byteResults, 0, byteResults.length);
-			output.flush();
-			
-			//Get response and return it
-			int readSuccess;
-			byte[] response = null, responsePart = null;
-			ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
-			
-			readSuccess = input.read(responsePart);
-			while(readSuccess != -1){
-				responseStream.write(responsePart);
-				readSuccess = input.read(responsePart);
+			sendConnection.addRequestProperty("Environment-Id", environmentID);
+			sendConnection.addRequestProperty("Segment-Id", segmentID);
+
+			OutputStream output = sendConnection.getOutputStream();
+			if(results != null){
+				byte[] byteResults = results.getBytes();
+				
+				//Send request to server
+				output.write(byteResults);
+				output.flush();
+
+				output.close();
 			}
-			response = responseStream.toByteArray();
-			
-			//Tidy up and return
-			output.close();
-			input.close();
-			
-			return new RTPResponse(response);
-			
+	        
+	        sendConnection.connect();
+	        int responseCode = sendConnection.getResponseCode();
+	        Log.v("Response code", Integer.toString(responseCode));
+	        
+	        if(responseCode == 200){
+	        	InputStream input = sendConnection.getInputStream();
+		        
+		        byte[] in = null, result = null;
+
+		        input.read(in);
+		        while(in != null){
+		        	Log.v(TAG, in.toString());
+		        	byte[] copy = result;
+		        	//Add in to the end of result
+		        	result = new byte[copy.length + in.length];
+		        	System.arraycopy(copy, 0, result, 0, copy.length);
+		        	System.arraycopy(in, 0, result, copy.length, in.length);
+		        }
+		        return new RTPResponse(responseCode, result);
+	        }
+	        else{
+	        	return new RTPResponse(responseCode, null);
+	        }
 		}
 		catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -78,19 +90,19 @@ public class ServerContacter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+		return new RTPResponse(0, null);
 	}
 
 	//Send ping to server to reset ping
 	public boolean sendRTOPing(){
 		try {
-			URL serverURL = new URL(server);		//throws MalformedURLException
+			URL serverURL = new URL("http://" + server + ":50080");		//throws MalformedURLException
 			HttpURLConnection connection = (HttpURLConnection) serverURL.openConnection(); //throws IOException
 			
 			connection.setDoOutput(true); //Set connection for output only
 			connection.setRequestMethod("POST");
 			
-			BufferedOutputStream output = new BufferedOutputStream(connection.getOutputStream());
+			OutputStream output = connection.getOutputStream();
 			
 			//TODO generate actual RTO ping
 			byte[] rtoPing = {0};
