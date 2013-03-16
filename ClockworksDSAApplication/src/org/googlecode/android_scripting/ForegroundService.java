@@ -1,4 +1,4 @@
-package com.dummy.fooforandroid;
+package org.googlecode.android_scripting;
 
 import java.lang.reflect.Method;
 

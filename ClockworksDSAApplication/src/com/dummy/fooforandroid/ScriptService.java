@@ -24,6 +24,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 
+import org.googlecode.android_scripting.ForegroundService;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -45,6 +47,8 @@ import com.googlecode.android_scripting.jsonrpc.RpcReceiverManager;
 /**
  * Loosely based on Alexey and Manuel work. A service that allows scripts and
  * the RPC server to run in the background.
+ * 
+ * Manages messages sent from the scripts by using sockets.
  * 
  * @author Alexey Reznichenko (alexey.reznichenko@gmail.com)
  * @author Manuel Naranjo (manuel@aircable.net)
@@ -166,7 +170,7 @@ public class ScriptService extends ForegroundService {
 					}
 				});
 	}
-
+	
 	RpcReceiverManager getRpcReceiverManager() throws InterruptedException {
 		mLatch.await();
 		if (mFacadeManager == null) { // Facade manage may not be available on

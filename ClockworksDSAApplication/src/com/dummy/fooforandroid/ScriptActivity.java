@@ -43,6 +43,8 @@ public class ScriptActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		Log.d(TAG, "onCreate()");
 		setContentView(R.layout.activity_main);
+		
+		//new Download(ScriptActivity.this,"url").execute();
 
 		serviceIntent = new Intent(ScriptActivity.this, ScriptService.class);
 		serviceIntent.putExtra("scriptPath", Environment.getExternalStorageDirectory().getPath()+"/sl4a/scripts/returnTest.py");
