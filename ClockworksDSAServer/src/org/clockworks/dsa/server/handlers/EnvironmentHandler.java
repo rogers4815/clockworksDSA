@@ -1,12 +1,15 @@
 package org.clockworks.dsa.server.handlers;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import org.clockworks.dsa.server.environment.Environment;
 import org.clockworks.dsa.server.environment.EnvironmentSegment;
 import org.clockworks.dsa.server.singletons.CodeQueue;
 import org.clockworks.dsa.server.singletons.EnvironmentList;
 
+import java.io.File;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -15,6 +18,8 @@ import com.sun.net.httpserver.HttpHandler;
  *
  */
 public class EnvironmentHandler implements HttpHandler {
+    
+    	private final String DELIMITER = ";;;";
 	
 	@Override
 	public void handle(HttpExchange httpExchange) throws IOException {
@@ -28,7 +33,17 @@ public class EnvironmentHandler implements HttpHandler {
 			
 			try{
 				
-				Environment env = new Environment(envId,httpExchange.getRequestBody());
+			    	byte[] requestbody = null;
+			    	httpExchange.getRequestBody().read(requestbody);
+			    	String requestbodyString = new String(requestbody);
+			    	String[] parameters = requestbodyString.split(DELIMITER);
+			    	
+			    	File script = new File(envId + "-simulation.py");
+			    	PrintStream out = new PrintStream(new FileOutputStream(script));
+			    	out.print(parameters[1]);
+			    	
+			    
+				Environment env = new Environment(envId, parameters[0], script);
 				EnvironmentList.sharedInstance().addEnvironment(env);
 				EnvironmentSegment[] segments = env.getSegments(0, env.getSegmentCount());
 				for(EnvironmentSegment s : segments){
