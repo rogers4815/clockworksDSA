@@ -17,9 +17,9 @@ public class Environment {
 	 * @param parameters
 	 * @param pythonScript Must be passed after applying .setReadOnly() on the file object
 	 */
-	public Environment(int id,InputStream inputFromHttp){
+	public Environment(int id, String parameters, File pythonScript){
 		this.id = id;
-		// NEED TO SPLIT inputFromHttp IN TO PYTHON SCRIPT AND PARAMETERS STRING!!!!
+	
 		this.setPythonScript(pythonScript);
 		//create 2d array of strings of parameters 
 		String byIdent[] = parameters.split(";;"); // Based on grammar used for
