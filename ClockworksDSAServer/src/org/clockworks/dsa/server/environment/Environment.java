@@ -61,8 +61,7 @@ public class Environment {
 		// Create new competed python scripts
 		for (int i = 0; i < completedScripts.length; i++) {
 			// create file name
-			String[] tmpFileName = pythonScript.getName().split(".");
-			String fileName = tmpFileName[0] + i + "." + tmpFileName[1];
+			String fileName = i + pythonScript.getName();
 			completedScripts[i] = new File(fileName);
 			// fill in file data
 			try (PrintStream out = new PrintStream(new FileOutputStream(
@@ -70,14 +69,17 @@ public class Environment {
 				// imports section
 				for (int j = 0; j < insertAfterImports; j++) {
 					out.println(lines.get(j));
+					System.out.println(lines.get(j));
 				}
 				// new parameters
 				for (int j = 0; j < permuted[i].length; j++) {
 					out.println(permuted[i][j]);
+					System.out.println(permuted[i][j]);
 				}
 				// Remainder of original script
 				for (int j = insertAfterImports; j < lines.size(); j++) {
 					out.println(lines.get(j));
+					System.out.println(lines.get(j));
 				}
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
