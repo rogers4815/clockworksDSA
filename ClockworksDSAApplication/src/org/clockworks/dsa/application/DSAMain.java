@@ -41,13 +41,15 @@ public class DSAMain extends Thread{
 				// TODO Create thread for processing the python script
 				boolean abort = false;
 				// TODO while not finished processing and abort is false
-					// TODO If timeout reached
-						if(requester.onAllowedNetwork()){
-							requester.sendRTOPing();
-						}
-						else{
-							abort = true;
-						}
+				while(!abort){
+					Thread.sleep(1000);
+					if(requester.onAllowedNetwork()){
+						requester.sendRTOPing();
+					}
+					else{
+						abort = true;
+					}
+				}
 			}
 		}
 	}
