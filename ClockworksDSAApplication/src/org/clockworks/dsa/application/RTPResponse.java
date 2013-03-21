@@ -1,5 +1,8 @@
 package org.clockworks.dsa.application;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class RTPResponse {
 	private String filePath = "simulation.py";
 	private int responseCode;
