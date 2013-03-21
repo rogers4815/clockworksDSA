@@ -42,7 +42,12 @@ public class DSAMain extends Thread{
 				boolean abort = false;
 				// TODO while not finished processing and abort is false
 				while(!abort){
-					Thread.sleep(1000);
+					try{
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					if(requester.onAllowedNetwork()){
 						requester.sendRTOPing();
 					}
