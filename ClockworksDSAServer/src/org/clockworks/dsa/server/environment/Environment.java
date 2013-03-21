@@ -69,17 +69,14 @@ public class Environment {
 				// imports section
 				for (int j = 0; j < insertAfterImports; j++) {
 					out.println(lines.get(j));
-					System.out.println(lines.get(j));
 				}
 				// new parameters
 				for (int j = 0; j < permuted[i].length; j++) {
 					out.println(permuted[i][j]);
-					System.out.println(permuted[i][j]);
 				}
 				// Remainder of original script
 				for (int j = insertAfterImports; j < lines.size(); j++) {
 					out.println(lines.get(j));
-					System.out.println(lines.get(j));
 				}
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -160,8 +157,11 @@ public class Environment {
 		if(!isComplete()){
 			return null;
 		}
-		//TODO: everything
-		return null;
+		String result = "";
+		for (int i = 0; i < segments.length; i++) {
+			result += segments[i].parametersToString() + ";" + segments[i].getResults();
+		}
+		return result;
 	}
 	
 	/**

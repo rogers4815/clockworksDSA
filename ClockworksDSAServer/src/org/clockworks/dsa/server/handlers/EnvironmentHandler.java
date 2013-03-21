@@ -34,21 +34,14 @@ public class EnvironmentHandler implements HttpHandler {
 			} while (EnvironmentList.sharedInstance().getEnvironmentById(envId) != null);
 
 			try {
-
 				
-				
-				BufferedReader br = new BufferedReader(
-						new InputStreamReader(httpExchange.getRequestBody()));
-
+				BufferedReader br = new BufferedReader(new InputStreamReader(
+						httpExchange.getRequestBody()));
 				StringBuilder sb = new StringBuilder();
-
 				String line;
 				while ((line = br.readLine()) != null) {
 					sb.append(line);
 				}
-
-				//System.out.println(sb.toString());
-
 				br.close();
 
 				String requestbodyString = sb.toString();
@@ -69,6 +62,7 @@ public class EnvironmentHandler implements HttpHandler {
 				}
 				statusCode = 200;
 				responseBody = "" + envId;
+				System.out.println(responseBody);
 				System.out.println("200 : Environment recieved.");
 
 			} catch (Exception e) {
