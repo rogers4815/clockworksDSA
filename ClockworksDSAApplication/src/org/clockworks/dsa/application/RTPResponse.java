@@ -1,22 +1,28 @@
 package org.clockworks.dsa.application;
 
 public class RTPResponse {
-	private String[] response;
-	private String filePath;
+	private String filePath = "simulation.py";
 	private int responseCode;
 	
 	public RTPResponse(int responseCode, byte[] response){
 		if(response != null){
-			this.response = (new String(response)).split("\n");
+			try {
+				FileOutputStream file = new FileOutputStream(this.filePath);
+				file.write(response);
+				file.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		this.responseCode = responseCode;
 	}
 
 	public String getSimulationFilePath() {
-		return filePath;
+		return this.filePath;
 	}
 	
 	public int getResponseCode(){
-		return responseCode;
+		return this.responseCode;
 	}
 }
