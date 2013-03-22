@@ -4,7 +4,6 @@ package org.clockworks.dsa.server.environment;
 import java.io.*;
 import java.util.*;
 
-import org.clockworks.dsa.server.singletons.PingQueue;
 
 public class Environment {
 	
@@ -40,14 +39,15 @@ public class Environment {
 
 		// Convert original file in to array so new lines can be inserted.
 		List<String> lines = new ArrayList<String>();
-		try (BufferedReader br = new BufferedReader(
-				new FileReader(pythonScript));) {
-
+		 
+		try  {
+			BufferedReader br = new BufferedReader(
+					new FileReader(pythonScript));
 			String sCurrentLine;
 			while ((sCurrentLine = br.readLine()) != null) {
 				lines.add(sCurrentLine);
 			}
-
+			br.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -64,8 +64,10 @@ public class Environment {
 			String fileName = i + pythonScript.getName();
 			completedScripts[i] = new File(fileName);
 			// fill in file data
-			try (PrintStream out = new PrintStream(new FileOutputStream(
-					completedScripts[i]))) {
+			PrintStream out = null;
+			try  {
+				out = new PrintStream(new FileOutputStream(
+						completedScripts[i]));
 				// imports section
 				for (int j = 0; j < insertAfterImports; j++) {
 					out.println(lines.get(j));
@@ -81,6 +83,8 @@ public class Environment {
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}finally{
+				out.close();
 			}
 		}
 		// Create all enviroment segments

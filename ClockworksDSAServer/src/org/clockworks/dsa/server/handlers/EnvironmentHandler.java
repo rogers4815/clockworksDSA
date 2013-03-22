@@ -32,7 +32,7 @@ public class EnvironmentHandler implements HttpHandler {
 			do {
 				envId = (int) System.currentTimeMillis();
 			} while (EnvironmentList.sharedInstance().getEnvironmentById(envId) != null);
-
+			PrintStream out = null;
 			try {
 				
 				BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -50,7 +50,7 @@ public class EnvironmentHandler implements HttpHandler {
 				//System.out.println(parameters[0]);
 				//System.out.println(parameters[1]);
 				File script = new File(envId + "-simulation.py");
-				PrintStream out = new PrintStream(new FileOutputStream(script));
+				out = new PrintStream(new FileOutputStream(script));
 				out.print(parameters[1]);
 
 				Environment env = new Environment(envId, parameters[0], script);
@@ -71,6 +71,8 @@ public class EnvironmentHandler implements HttpHandler {
 				responseBody = "Environment error";
 				System.out.println("400 : Environment error");
 				e.printStackTrace();
+			}finally{
+				out.close();
 			}
 
 		} else {
