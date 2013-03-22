@@ -36,6 +36,12 @@ public class UserSubmission {
 
 		int WOPResponse = 102;
 		while (WOPResponse == 102) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			WOPResponse = sendWOPPing();
 		}
 
