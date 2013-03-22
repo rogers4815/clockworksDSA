@@ -27,6 +27,7 @@ public class EnvironmentHandler implements HttpHandler {
 	public void handle(HttpExchange httpExchange) throws IOException {
 		int statusCode = 0;
 		String responseBody = "";
+
 		try
 		{
 			if (httpExchange.getRequestMethod().equalsIgnoreCase("POST")) {
@@ -75,6 +76,7 @@ public class EnvironmentHandler implements HttpHandler {
 					e.printStackTrace();
 				}finally{
 					out.close();
+
 				}
 	
 			} else {
