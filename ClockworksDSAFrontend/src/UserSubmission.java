@@ -1,4 +1,3 @@
-package src;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -124,7 +123,7 @@ public class UserSubmission {
 			String line = br.readLine();
 			// Send simulation to server
 			while (line != null) {
-				output.writeBytes(line);
+				output.writeBytes(line+'\n');
 				line = br.readLine();
 			}
 			output.flush();

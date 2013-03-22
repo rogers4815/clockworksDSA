@@ -55,13 +55,13 @@ public class Environment {
 
 		// Find end of imports section of file.
 		int insertAfterImports = 0;
-		while (lines.get(insertAfterImports).contains("import"))
+		while (lines.get(insertAfterImports).contains("import")|| lines.get(insertAfterImports).equals(""))
 			insertAfterImports++;
 
 		// Create new competed python scripts
 		for (int i = 0; i < completedScripts.length; i++) {
 			// create file name
-			String fileName = i + pythonScript.getName();
+			String fileName = i + "-" +pythonScript.getName();
 			completedScripts[i] = new File(fileName);
 			// fill in file data
 			PrintStream out = null;
