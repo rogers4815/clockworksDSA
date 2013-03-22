@@ -29,6 +29,7 @@ public class CodeQueue{
 	 */
 	private CodeQueue(){
 		queue = new ConcurrentLinkedQueue<EnvironmentSegment>();
+		
 	}
 
 	/**

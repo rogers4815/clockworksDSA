@@ -57,6 +57,7 @@ public class EnvironmentList {
 	}
 	
 	synchronized public boolean deleteEnvironment(Environment e){
+		
 		return list.remove(e);
 	}
 

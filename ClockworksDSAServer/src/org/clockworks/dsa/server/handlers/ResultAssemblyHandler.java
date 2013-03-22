@@ -23,45 +23,62 @@ public class ResultAssemblyHandler implements HttpHandler {
 		String responseBody = "";
 		Headers headers = httpExchange.getRequestHeaders();
 		List<String> environmentIdList = headers.get("Environment-Id");
-		
-		if(environmentIdList==null)
+		try
 		{
-			System.out.println("400: Missing required headers");
-			statusCode = 400;
-			responseBody = "Missing required headers.";
-		}else{
-			
-			int environmentId = Integer.parseInt(environmentIdList.get(0));
-			
-			if(httpExchange.getRequestMethod().equalsIgnoreCase("GET"))
+		
+			if(environmentIdList==null)
 			{
-				Environment environment = EnvironmentList.sharedInstance().getEnvironmentById(environmentId);
-				if(environment==null){
-					System.out.println("404: Environment not found");
-					statusCode = 404;
-					responseBody = "Environment not found";
-				}else{
-					String results = environment.returnAssembledResult();
-					if(results==null){
-						System.out.println("102: Process not ready");
-						statusCode = 102;
-						responseBody = "Process not ready";
+				System.out.println("400: Missing required headers");
+				statusCode = 400;
+				responseBody = "Missing required headers.";
+			}else{
+				
+				int environmentId = Integer.parseInt(environmentIdList.get(0));
+				
+				if(httpExchange.getRequestMethod().equalsIgnoreCase("GET"))
+				{
+					Environment environment = EnvironmentList.sharedInstance().getEnvironmentById(environmentId);
+					if(environment==null){
+						System.out.println("404: Environment not found");
+						statusCode = 404;
+						responseBody = "Environment not found";
 					}else{
-						statusCode = 200;
-						responseBody = results;
-						EnvironmentList.sharedInstance().deleteEnvironment(environment);
+						String results = environment.returnAssembledResult();
+						if(results==null){
+							System.out.println("102: Process not ready");
+							statusCode = 102;
+							responseBody = "Process not ready";
+						}else{
+							statusCode = 200;
+							responseBody = results;
+							EnvironmentList.sharedInstance().deleteEnvironment(environment);
+						}
 					}
 				}
-			}
-			else{
-				System.out.println("405: Method not allowed");
-				statusCode = 405;
-				responseBody = "Method not allowed";
+				else{
+					System.out.println("405: Method not allowed");
+					statusCode = 405;
+					responseBody = "Method not allowed";
+				}
 			}
 		}
-		httpExchange.sendResponseHeaders(statusCode, responseBody.length());
-		httpExchange.getResponseBody().write(responseBody.getBytes());
-		httpExchange.close();
+		catch(Exception e)
+		{
+			statusCode = 500;
+		}
+		
+		if(statusCode==102)
+		{
+			httpExchange.sendResponseHeaders(statusCode, -1);
+			httpExchange.close();
+		}
+		else
+		{
+			httpExchange.sendResponseHeaders(statusCode, responseBody.length());
+			httpExchange.getResponseBody().write(responseBody.getBytes());
+			httpExchange.close();
+		}
+		
 	}
 
 }
