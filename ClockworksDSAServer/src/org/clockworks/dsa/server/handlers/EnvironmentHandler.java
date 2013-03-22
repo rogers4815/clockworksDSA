@@ -27,58 +27,66 @@ public class EnvironmentHandler implements HttpHandler {
 	public void handle(HttpExchange httpExchange) throws IOException {
 		int statusCode = 0;
 		String responseBody = "";
-		if (httpExchange.getRequestMethod().equalsIgnoreCase("POST")) {
-			int envId;
-			do {
-				envId = (int) System.currentTimeMillis();
-			} while (EnvironmentList.sharedInstance().getEnvironmentById(envId) != null);
-			PrintStream out = null;
-			try {
-				
-				BufferedReader br = new BufferedReader(new InputStreamReader(
-						httpExchange.getRequestBody()));
-				StringBuilder sb = new StringBuilder();
-				String line;
-				while ((line = br.readLine()) != null) {
-					sb.append(line);
+		try
+		{
+			if (httpExchange.getRequestMethod().equalsIgnoreCase("POST")) {
+				int envId;
+				do {
+					envId = (int) System.currentTimeMillis();
+				} while (EnvironmentList.sharedInstance().getEnvironmentById(envId) != null);
+				PrintStream out = null;
+				try {
+					
+					BufferedReader br = new BufferedReader(new InputStreamReader(
+							httpExchange.getRequestBody()));
+					StringBuilder sb = new StringBuilder();
+					String line;
+					while ((line = br.readLine()) != null) {
+						sb.append(line);
+					}
+					br.close();
+	
+					String requestbodyString = sb.toString();
+					//System.out.println(requestbodyString);
+					String[] parameters = requestbodyString.split(DELIMITER);
+					//System.out.println(parameters[0]);
+					//System.out.println(parameters[1]);
+					File script = new File(envId + "-simulation.py");
+					out = new PrintStream(new FileOutputStream(script));
+					out.print(parameters[1]);
+	
+					Environment env = new Environment(envId, parameters[0], script);
+					EnvironmentList.sharedInstance().addEnvironment(env);
+					EnvironmentSegment[] segments = env.getSegments(0,env.getSegmentCount());
+					
+					for (EnvironmentSegment s : segments) {
+						CodeQueue.sharedInstance().addToQueue(s);
+					}
+					System.out.println(""+segments.length+" segments added to queue");
+					statusCode = 200;
+					responseBody = "" + envId;
+					System.out.println("200 : Environment recieved.");
+	
+				} catch (Exception e) {
+	
+					statusCode = 400;
+					responseBody = "Environment error";
+					System.out.println("400 : Environment error");
+					e.printStackTrace();
+				}finally{
+					out.close();
 				}
-				br.close();
-
-				String requestbodyString = sb.toString();
-				//System.out.println(requestbodyString);
-				String[] parameters = requestbodyString.split(DELIMITER);
-				//System.out.println(parameters[0]);
-				//System.out.println(parameters[1]);
-				File script = new File(envId + "-simulation.py");
-				out = new PrintStream(new FileOutputStream(script));
-				out.print(parameters[1]);
-
-				Environment env = new Environment(envId, parameters[0], script);
-				EnvironmentList.sharedInstance().addEnvironment(env);
-				EnvironmentSegment[] segments = env.getSegments(0,
-						env.getSegmentCount());
-				for (EnvironmentSegment s : segments) {
-					CodeQueue.sharedInstance().addToQueue(s);
-				}
-				statusCode = 200;
-				responseBody = "" + envId;
-				System.out.println(responseBody);
-				System.out.println("200 : Environment recieved.");
-
-			} catch (Exception e) {
-
-				statusCode = 400;
-				responseBody = "Environment error";
-				System.out.println("400 : Environment error");
-				e.printStackTrace();
-			}finally{
-				out.close();
+	
+			} else {
+				statusCode = 405;
+				System.out.println("405 : Method not allowed");
 			}
-
-		} else {
-			statusCode = 405;
-			System.out.println("405 : Method not allowed");
 		}
+		catch(Exception e)
+		{
+			statusCode = 500;
+		}
+		
 		httpExchange.sendResponseHeaders(statusCode, responseBody.length());
 		httpExchange.getResponseBody().write(responseBody.getBytes());
 		httpExchange.close();
