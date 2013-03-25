@@ -27,106 +27,134 @@ import com.sun.net.httpserver.HttpHandler;
 public class BotRequestHandler implements HttpHandler {
 	
 	private HashMap<String,BotRequestHandler.TimeOut> timers;
-	private final int timeoutDuration = 2000;
+	private final int timeoutDuration = 10000;
+	
+	public BotRequestHandler(){
+		super();
+		timers = new HashMap<String,BotRequestHandler.TimeOut>();
+	}
 	
 	@Override
 	public void handle(HttpExchange httpExchange) throws IOException {
-		
+		System.out.println("Request received on /botrequesthandler");
 		int statusCode = 0;
 		String responseBody = "";
 		Headers headers = httpExchange.getRequestHeaders();
 		List<String> environmentIdList = headers.get("Environment-Id");
 		List<String> segmentIdList = headers.get("Segment-Id");
 		
-		if(environmentIdList==null||segmentIdList==null)
-		{
-			System.out.println("400: Missing required headers");
-			statusCode = 400;
-			responseBody = "Missing required headers.";
-		}else{
-			
-			int environmentId = Integer.parseInt(environmentIdList.get(0));
-			int segmentId = Integer.parseInt(segmentIdList.get(0));
-			
-			if(httpExchange.getRequestMethod().equalsIgnoreCase("POST"))
+		try{
+		
+			if(environmentIdList==null||segmentIdList==null)
 			{
+				System.out.println("400: Missing required headers");
+				statusCode = 400;
+				responseBody = "Missing required headers.";
+			}else{
 				
-				if(environmentId!=0&&segmentId!=0)
+				int environmentId = Integer.parseInt(environmentIdList.get(0));
+				int segmentId = Integer.parseInt(segmentIdList.get(0));
+				
+				if(httpExchange.getRequestMethod().equalsIgnoreCase("POST"))
 				{
-					System.out.println("Looking for environment");
-					InputStream resultStream = httpExchange.getRequestBody();
-					String results = resultStream.toString();
 					
-					
-					// log results to environment
-					Environment e = EnvironmentList.sharedInstance().getEnvironmentById(environmentId);
-					if(e==null){
-						System.out.println("404: Environment Not Found"); 
-						statusCode = 404;
-						responseBody = "Environment Not Found.";
-					}else{
+					if(environmentId!=0&&segmentId!=0)
+					{
+						System.out.println("Looking for environment");
+						InputStream resultStream = httpExchange.getRequestBody();
+						String results = resultStream.toString();
 						
-						int resultInputStatusCode = e.completeSegmentWithResults(results, segmentId);
-						if(resultInputStatusCode==404){
-							System.out.println("404: Segment Not Found");
+						
+						// log results to environment
+						Environment e = EnvironmentList.sharedInstance().getEnvironmentById(environmentId);
+						if(e==null){
+							System.out.println("404: Environment Not Found"); 
 							statusCode = 404;
-							responseBody = "Segment Not Found.";
-						}else if(resultInputStatusCode==409){
-							System.out.println("409: Clash of results");
-							statusCode = 409;
-							responseBody = "Clash of results.";
+							responseBody = "Environment Not Found.";
 						}else{
-							deleteTimerForIds(environmentId, segmentId);
+							
+							int resultInputStatusCode = e.completeSegmentWithResults(results, segmentId);
+							if(resultInputStatusCode==404){
+								System.out.println("404: Segment Not Found");
+								statusCode = 404;
+								responseBody = "Segment Not Found.";
+							}else if(resultInputStatusCode==409){
+								System.out.println("409: Clash of results");
+								statusCode = 409;
+								responseBody = "Clash of results.";
+							}else{
+								deleteTimerForIds(environmentId, segmentId);
+							}
+						}
+					}else if(environmentId!=0||segmentId!=0){
+						System.out.println("400: Bad Headers");
+						statusCode = 400;
+						responseBody = "Bad Headers.";
+					}
+				
+				
+					//queue ping
+					PingQueue.sharedInstance().addToQueue(new RTPPing(httpExchange));
+					if(statusCode==0)
+					{
+						if(CodeQueue.sharedInstance().isEmpty())
+						{
+							statusCode = 204;
+							responseBody = "Code unavailable at this time.";
+							System.out.println("204: Code unavailable at this time");
+						}
+						else
+						{
+							// get from code queue
+							EnvironmentSegment seg = CodeQueue.sharedInstance().popFromQueue();
+							httpExchange.getResponseHeaders().add("Environment-Id", ""+seg.getParentId());
+							httpExchange.getResponseHeaders().add("Segment-Id", ""+seg.getId());
+							
+							// package into unified object
+							responseBody = seg.getUnifiedFile();
+							statusCode = 200;
+							System.out.println("200: Code sent.");
+							createTimerForEnvironmentSegment(seg);
 						}
 					}
-				}else if(environmentId!=0||segmentId!=0){
-					System.out.println("400: Bad Headers");
-					statusCode = 400;
-					responseBody = "Bad Headers.";
 				}
-			
-			
-				//queue ping
-				PingQueue.sharedInstance().addToQueue(new RTPPing(httpExchange));
-				if(statusCode==0)
+				else if(httpExchange.getRequestMethod().equalsIgnoreCase("GET"))
 				{
-					if(CodeQueue.sharedInstance().isEmpty())
-					{
-						statusCode = 204;
-						responseBody = "Code unavailable at this time.";
-						System.out.println("204: Code unavailable at this time");
-					}
-					else
-					{
-						// get from code queue
-						EnvironmentSegment seg = CodeQueue.sharedInstance().popFromQueue();
-						
-						// package into unified object
-						responseBody = seg.getUnifiedFile();
-						statusCode = 200;
-						
+					System.out.println("RTO received: Resetting timer");
+					try{
 						resetTimerForIds(environmentId, segmentId);
+						statusCode = 201;
+					}catch(Exception e){
+						statusCode = 500;
 					}
+					
+				
+				}else{
+					statusCode = 405;
+					responseBody = "Method not allowed";
 				}
-			}
-			else if(httpExchange.getRequestMethod().equalsIgnoreCase("GET"))
-			{
-				resetTimerForIds(environmentId, segmentId);
-			
-			}else{
-				statusCode = 405;
-				responseBody = "Method not allowed";
 			}
 		}
+		catch(Exception e)
+		{
+			statusCode = 500;
+		}
 		
+		if(statusCode == 204)
+		{
+			httpExchange.sendResponseHeaders(statusCode, -1);
+		}
+		else
+		{
+			httpExchange.sendResponseHeaders(statusCode, responseBody.length());
+			httpExchange.getResponseBody().write(responseBody.getBytes());
+		}
+		httpExchange.close();
 		
-		httpExchange.sendResponseHeaders(statusCode, responseBody.length());
-		OutputStream response = httpExchange.getResponseBody();
-		response.write(responseBody.getBytes());
-		response.close();
 	}
 	
 	private void timerDidTimeOut(EnvironmentSegment s){
+		System.out.println("Timer time out: Readded segment to queue.");
 		CodeQueue.sharedInstance().addToQueue(s);
 	}
 	
@@ -137,7 +165,8 @@ public class BotRequestHandler implements HttpHandler {
 		}
 	}
 	private void createTimerForEnvironmentSegment(final EnvironmentSegment s){
-		deleteTimerForIds(s.getParentId(),s.getId());
+		
+		System.out.println("Timer started for segment");
 		TimeOut newTimer = new TimeOut(s);
 		newTimer.schedule(new TimerTask(){
 			
@@ -148,10 +177,13 @@ public class BotRequestHandler implements HttpHandler {
 			}
 			
 		},timeoutDuration);
+		
 		timers.put(""+s.getParentId()+s.getId(), newTimer);
+		
 	}
 	private void resetTimerForIds(int environmentId, int segmentId){
 		EnvironmentSegment s = deleteTimerForIds(environmentId, segmentId);
+		System.out.println("Deleted timer");
 		createTimerForEnvironmentSegment(s);
 	}
 

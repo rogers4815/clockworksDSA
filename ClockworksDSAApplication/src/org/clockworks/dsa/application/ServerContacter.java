@@ -26,6 +26,7 @@ public class ServerContacter {
 	
 	//Send RTP ping to server and fetch response
 	public RTPResponse sendRTPPing(String results, String environmentID, String segmentID){
+		HttpURLConnection sendConnection = null;
 		try {
 			URL serverURL = new URL("http://" + server + ":50080/botrequesthandler"); //throws MalformedURLException
 			
@@ -39,11 +40,10 @@ public class ServerContacter {
 				segmentID = "0";
 			}
 			
-			HttpURLConnection sendConnection = (HttpURLConnection) serverURL.openConnection(); //throws IOException
+			sendConnection = (HttpURLConnection) serverURL.openConnection(); //throws IOException
 			sendConnection.setReadTimeout(10000);
 			sendConnection.setRequestMethod("POST");
 			
-			//Can the server parse these back out properly?
 			sendConnection.addRequestProperty("Environment-Id", environmentID);
 			sendConnection.addRequestProperty("Segment-Id", segmentID);
 
@@ -60,26 +60,28 @@ public class ServerContacter {
 	        
 	        sendConnection.connect();
 	        int responseCode = sendConnection.getResponseCode();
-	        Log.v("Response code", Integer.toString(responseCode));
 	        
 	        if(responseCode == 200){
+	        	environmentID = sendConnection.getHeaderField("Environment-Id");
+	        	segmentID = sendConnection.getHeaderField("Segment-Id");
 	        	InputStream input = sendConnection.getInputStream();
 		        
-		        byte[] in = null, result = null;
+		        byte[] in = {}, result = {};
 
 		        input.read(in);
-		        while(in != null){
-		        	Log.v(TAG, in.toString());
+		        while(in.length != 0){
 		        	byte[] copy = result;
 		        	//Add in to the end of result
 		        	result = new byte[copy.length + in.length];
 		        	System.arraycopy(copy, 0, result, 0, copy.length);
 		        	System.arraycopy(in, 0, result, copy.length, in.length);
+		        	in = new byte[0];
 		        }
-		        return new RTPResponse(responseCode, result);
+		        Log.v("Result", new String(result));
+		        return new RTPResponse(responseCode, result, environmentID, segmentID, myContext);
 	        }
 	        else{
-	        	return new RTPResponse(responseCode, null);
+	        	return new RTPResponse(responseCode, null, "", "", myContext);
 	        }
 		}
 		catch (MalformedURLException e) {
@@ -90,26 +92,23 @@ public class ServerContacter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return new RTPResponse(0, null);
+		return new RTPResponse(0, null, "", "", myContext);
 	}
 
 	//Send ping to server to reset ping
-	public boolean sendRTOPing(){
+	public boolean sendRTOPing(String environmentID, String segmentID){
 		try {
-			URL serverURL = new URL("http://" + server + ":50080");		//throws MalformedURLException
+			URL serverURL = new URL("http://" + server + ":50080/botrequesthandler");		//throws MalformedURLException
 			HttpURLConnection connection = (HttpURLConnection) serverURL.openConnection(); //throws IOException
 			
-			connection.setDoOutput(true); //Set connection for output only
-			connection.setRequestMethod("POST");
+			//connection.setDoOutput(true); //Set connection for output only
+			connection.setRequestMethod("GET");
 			
-			OutputStream output = connection.getOutputStream();
+			connection.addRequestProperty("Environment-Id", environmentID);
+			connection.addRequestProperty("Segment-Id", segmentID);
 			
-			//TODO generate actual RTO ping
-			byte[] rtoPing = {0};
+			Log.v("Result", ""+connection.getResponseCode());
 			
-			output.write(rtoPing, 0, rtoPing.length);
-			output.flush();
-			output.close();
 			return true; //success
 		}
 		catch (MalformedURLException e) {
