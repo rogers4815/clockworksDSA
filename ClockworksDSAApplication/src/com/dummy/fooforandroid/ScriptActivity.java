@@ -26,6 +26,7 @@ import android.widget.Button;
 
 /**
  * Loosely based on Alexey code
+ * 
  * @author Alexey Reznichenko (alexey.reznichenko@gmail.com)
  * @author Arnaud TANGUY
  */
@@ -37,17 +38,17 @@ public class ScriptActivity extends Activity {
 	private Button startSimulationButton;
 	private Button stopSimulationButton;
 
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.d(TAG, "onCreate()");
 		setContentView(R.layout.activity_main);
-		
-		//new Download(ScriptActivity.this,"url").execute();
 
-		serviceIntent = new Intent(ScriptActivity.this, ScriptService.class);
-		serviceIntent.putExtra("scriptPath", Environment.getExternalStorageDirectory().getPath()+"/sl4a/scripts/returnTest.py");
+		// serviceIntent = new Intent(ScriptActivity.this, ScriptService.class);
+		// serviceIntent.putExtra("scriptPath",
+		// Environment.getExternalStorageDirectory().getPath()+"/sl4a/scripts/returnTest.py");
+		serviceIntent = new Intent(ScriptActivity.this,
+				ApplicationService.class);
 
 		startSimulationButton = (Button) findViewById(R.id.startSimulationButton);
 		stopSimulationButton = (Button) findViewById(R.id.stopSimulationButton);
@@ -76,11 +77,12 @@ public class ScriptActivity extends Activity {
 				 * Context.BIND_AUTO_CREATE); startService(serviceIntent); }
 				 * else {
 				 */
+
 				ScriptApplication application = (ScriptApplication) getApplication();
 				if (application.readyToStart()) {
+					Log.d(TAG, "Calling startService");
 					startService(serviceIntent);
 				}
-				// }
 			}
 		});
 

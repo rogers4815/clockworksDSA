@@ -9,5 +9,6 @@
     <string name="python_service_name">PythonService</string>
     <string name="start_simulation">Start</string>
     <string name="stop_simulation">Stop</string>
+    <string name="application_service_label">Clockworks Service</string>
 
 </resources>

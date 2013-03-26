@@ -19,7 +19,7 @@ public class ScriptApplication extends BaseApplication implements
 		mConfiguration = new InterpreterConfiguration(this);
 		mConfiguration.registerObserver(this);
 		mConfiguration.startDiscovering(InterpreterConstants.MIME
-				+ ".py");//Script.getFileExtension(this));
+				+ ".py"); //Script.getFileExtension(this));
 	}
 
 	@Override
