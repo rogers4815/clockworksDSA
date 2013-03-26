@@ -32,7 +32,7 @@ Clockworks distributed simulation app for android devices
 
 ### Shared variable accesses:
 * [Ping queue](#ping-queue): Pop off expired and read size
-* [Code queue](#code-queue): Check if full and add to Queue
+* [Code queue](#code-queue): Add to Queue
 
 [Top](#contents)
 
@@ -81,7 +81,7 @@ Clockworks distributed simulation app for android devices
 
 ## Bot Network Interface
 
-* Ping server to indicate readiness to process
+* [Ping](#rtp-ping-ready-to-process) server to indicate readiness to process
 * Process python script
 
 [Top](#contents)
@@ -92,7 +92,7 @@ Clockworks distributed simulation app for android devices
 
 ## WOP Ping (Waiting On Process)
 
-* Sent from the user after every t seconds to check if the results have been collected
+* Sent from the user after every t seconds to check whether all results have been collated
 
 <pre>
 GET /resultassemblyhandler HTTP/1.1
@@ -161,13 +161,15 @@ May contain traces of results
 * 200: Response with code to run
 
 <pre>
-Sample Response of this type here
+{
+	"script" : "script"
+}
 </pre>
 
 * 204: No code available at this time from Queue
 
 <pre>
-Sample Response of this type here
+
 </pre>
 
 [Top](#contents)
@@ -190,13 +192,13 @@ Segment-Id: 0
 * 200: Success
 
 <pre>
-Sample
+
 </pre>
 
 * 404: Process Not Found
 
 <pre>
-Sample
+
 </pre>
 
 [Top](#contents)
@@ -214,7 +216,7 @@ Sample
 * Yellow: Start
 * Green: Data received
 * Red: Response sent
-* Black: Segment created
+* Black: Segments created
 
 [Top](#contents)
 
