@@ -57,10 +57,7 @@ Clockworks distributed simulation app for android devices
  * Log to [Ping Queue](#ping-queue)
  * [Respond](#rtp-response)
 * If [RTO Ping](#rto-ping-reset-time-out): 
- * Restart the processes [time out](#timer--timeout-handlers)
-
-### Database accesses:
-* Result logging: write
+ * Restart the segment's [timer](#timer--timeout-handlers)
 
 ### Shared variable accesses:
 * [Ping Queue](#ping-queue): Add to Queue
@@ -70,11 +67,11 @@ Clockworks distributed simulation app for android devices
 
 ## Timer / Timeout handlers
 
-* One for each process of the simulation
+* One process for each segment of the simulation [Environment](#environment)
 
 ### Shared variable accesses:
 
-* [Code Queue](#code-queue): Add to Queue if time out reached 
+* [Code Queue](#code-queue): Re-add segment to Code Queue if time out interval reached 
 
 [Top](#contents)
 
@@ -83,6 +80,9 @@ Clockworks distributed simulation app for android devices
 # Bot
 
 ## Bot Network Interface
+
+* Ping server to indicate readiness to process
+* Process python script
 
 [Top](#contents)
 
@@ -160,15 +160,15 @@ May contain traces of results
 
 * 200: Response with code to run
 
-<code>
+<pre>
 Sample Response of this type here
-</code>
+</pre>
 
 * 204: No code available at this time from Queue
 
-<code>
+<pre>
 Sample Response of this type here
-</code>
+</pre>
 
 [Top](#contents)
 
@@ -176,28 +176,28 @@ Sample Response of this type here
 
 * Tell the server to reset its process timer for the indicated process
 
-<code>
+<pre>
 POST /botrequesthandler HTTP/1.1</br>
 Host: www.example.com</br>
 Content-Type: text/plain-text; charset=utf-8</br>
 Content-Length: length</br>
 Environment-Id: 0</br>
 Segment-Id: 0
-</code>
+</pre>
 
 ### RTO Ping Response:
 
 * 200: Success
 
-<code>
+<pre>
 Sample
-</code>
+</pre>
 
 * 404: Process Not Found
 
-<code>
+<pre>
 Sample
-</code>
+</pre>
 
 [Top](#contents)
 
@@ -214,8 +214,7 @@ Sample
 * Yellow: Start
 * Green: Data received
 * Red: Response sent
-* Blue: Database access
-* Black: Scary Stuff
+* Black: Segment created
 
 [Top](#contents)
 
