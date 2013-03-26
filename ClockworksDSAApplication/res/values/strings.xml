@@ -4,5 +4,11 @@
     <string name="app_name">ClockworksDSAApplication</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
+    <string name="local_service_started">Service started</string>
+    <string name="local_service_label">Script running</string>
+    <string name="python_service_name">PythonService</string>
+    <string name="start_simulation">Start</string>
+    <string name="stop_simulation">Stop</string>
+    <string name="application_service_label">Clockworks Service</string>
 
 </resources>
