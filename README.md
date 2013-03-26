@@ -16,9 +16,9 @@ Clockworks distributed simulation app for android devices
   * [RTP Ping](#rtp-ping-ready-to-process)
   * [RTO Ping](#rto-ping-reset-time-out)
   * [Environment](#environment)
+  * [Environment Segment](#environment-segment)
 * [Appendix](#appendix)
   * [Flowchart Key](#flowchart-key)
-  * [Ping Queue](#ping-queue)
   * [Code Queue](#code-queue)
 
 #Server
@@ -31,7 +31,6 @@ Clockworks distributed simulation app for android devices
 
 
 ### Shared variable accesses:
-* [Ping queue](#ping-queue): Pop off expired and read size
 * [Code queue](#code-queue): Add to Queue
 
 [Top](#contents)
@@ -54,13 +53,11 @@ Clockworks distributed simulation app for android devices
 * Listen for HTTP request from devices
 * If [RTP Ping](#rtp-ping-ready-to-process): 
  * Strip any results from ping and add to Segment
- * Log to [Ping Queue](#ping-queue)
  * [Respond](#rtp-response)
 * If [RTO Ping](#rto-ping-reset-time-out): 
  * Restart the segment's [timer](#timer--timeout-handlers)
 
 ### Shared variable accesses:
-* [Ping Queue](#ping-queue): Add to Queue
 * [Code Queue](#code-queue): Take off Queue if available
 
 [Top](#contents)
@@ -205,7 +202,14 @@ Segment-Id: 0
 
 ## Environment
 
-### Environment Response:
+* The user-defined simulation
+* Creation defines the [Environment Segments](#environment-segment) for this simulation
+
+[Top](#contents)
+
+## Environment Segment
+
+* Segment of a simulation
 
 [Top](#contents)
 
@@ -217,15 +221,6 @@ Segment-Id: 0
 * Green: Data received
 * Red: Response sent
 * Black: Segments created
-
-[Top](#contents)
-
-## Ping Queue
-
-* On read:
- * Pop expired pings of the top of the Queue and update size, then read size
-* On write:
- * Simply add ping log to the Queue
 
 [Top](#contents)
 
