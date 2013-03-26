@@ -26,7 +26,7 @@ Clockworks distributed simulation app for android devices
 ## User Environment Listener
 
 * Get [environments](#environment) from users over HTTP.
-* Split code into all permutations of variable categories given and add to [code queue](#code-queue)
+* Split code into all permutations of variable categories given and add to [Code Queue](#code-queue)
 * Respond to users with [rejects/acknowledgements](#environment-response)
 
 
@@ -71,7 +71,7 @@ Clockworks distributed simulation app for android devices
 
 ### Shared variable accesses:
 
-* [Code Queue](#code-queue): Re-add segment to Code Queue if time out interval reached 
+* [Code Queue](#code-queue): Re-add segment to Queue if time out interval reached 
 
 [Top](#contents)
 
@@ -120,7 +120,7 @@ Environment-Id: 0
 			"rap"
 		],
 		"results" : "result",
-		"valid":true
+		"script-valid":true
 	},
 	{
 		"params":[
@@ -176,7 +176,7 @@ May contain traces of results
 
 ## RTO Ping (Reset Time Out)
 
-* Tell the server to reset its process timer for the indicated process
+* Tell the server to reset its process timer for the indicated segment
 
 <pre>
 POST /botrequesthandler HTTP/1.1</br>
