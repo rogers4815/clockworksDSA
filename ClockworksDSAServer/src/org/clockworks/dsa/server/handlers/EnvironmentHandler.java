@@ -27,7 +27,7 @@ public class EnvironmentHandler implements HttpHandler {
 	public void handle(HttpExchange httpExchange) throws IOException {
 		int statusCode = 0;
 		String responseBody = "";
-
+		System.out.println("Request received on /environmenthandler");
 		try
 		{
 			if (httpExchange.getRequestMethod().equalsIgnoreCase("POST")) {
@@ -43,7 +43,7 @@ public class EnvironmentHandler implements HttpHandler {
 					StringBuilder sb = new StringBuilder();
 					String line;
 					while ((line = br.readLine()) != null) {
-						sb.append(line);
+						sb.append(line + '\n');
 					}
 					br.close();
 	

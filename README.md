@@ -9,7 +9,6 @@ Clockworks distributed simulation app for android devices
   * [User Result Assembly](#user-result-assembly)
   * [Bot Interface Listener](#bot-interface-listener)
   * [Timer / Timeout Handlers](#timer--timeout-handlers)
-  * [Database Schema](#database-schema)
 * [Bot](#bot)
   * [Bot Network Interface](#bot-network-interface)
 * [API Spec](#api-spec)
@@ -26,14 +25,10 @@ Clockworks distributed simulation app for android devices
 
 ## User Environment Listener
 
-* Listen for [environments](#environment) from users over HTTPS, authentication is optional
-* Get number of recent devices from [Ping Queue](#ping-queue).
-* Get space in [Code Queue](#code-queue).
-* Split code based on number of available devices, (i.e. split amout is minimum of: pings received in the previous allowed window, space in queue and how much the code can be split) and add to [code queue](#code-queue)
+* Get [environments](#environment) from users over HTTP.
+* Split code into all permutations of variable categories given and add to [code queue](#code-queue)
 * Respond to users with [rejects/acknowledgements](#environment-response)
 
-### Database accesses:
-* User authentication
 
 ### Shared variable accesses:
 * [Ping queue](#ping-queue): Pop off expired and read size
@@ -45,14 +40,10 @@ Clockworks distributed simulation app for android devices
 
 ## User Result Assembly
 
-* Listen for [WOP Pings](#wop-ping-waiting-on-process) from users over HTTPS, authentication is optional
-* Check if database complete with all results
+* Listen for [WOP Pings](#wop-ping-waiting-on-process) from users over HTTP.
+* Check if [Environment](#environment) is complete with all results
 * Respond to users with [rejects/acknowledgement/compiled results](#wop-ping-response)
 
-
-### Database accesses:
-* User authentication
-* Results: read/purge
 
 [Top](#contents)
 
@@ -62,7 +53,7 @@ Clockworks distributed simulation app for android devices
 
 * Listen for HTTP request from devices
 * If [RTP Ping](#rtp-ping-ready-to-process): 
- * Strip any results from ping and enter in database
+ * Strip any results from ping and add to Segment
  * Log to [Ping Queue](#ping-queue)
  * [Respond](#rtp-response)
 * If [RTO Ping](#rto-ping-reset-time-out): 
@@ -89,52 +80,6 @@ Clockworks distributed simulation app for android devices
 
 ![SNAIL](WikiImages/ServerNetworkAppInterfaceListenerSNAIL.jpeg?raw=true)
 
-## Database Schema
-### Authentication
-<table>
- <tr>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
- </tr>
-</table>
-### Environment
-<table>
- <tr>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
- </tr>
-</table>
-### Process
-<table>
- <tr>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
- </tr>
-</table>
-
-[Top](#contents)
-
 # Bot
 
 ## Bot Network Interface
@@ -149,39 +94,50 @@ Clockworks distributed simulation app for android devices
 
 * Sent from the user after every t seconds to check if the results have been collected
 
-<code>
-GET /resultassemblyhandler HTTP/1.1</br>
-Host: www.example.com</br>
-Content-Type: text/plain-text; charset=utf-8</br>
-Content-Length: length</br>
+<pre>
+GET /resultassemblyhandler HTTP/1.1
+Host: www.example.com
+Content-Type: text/plain-text; charset=utf-8
+Content-Length: length
 Environment-Id: 0
-</code>
+</pre>
 
 ### WOP Ping Response:
 
 * 102: Process Not ready
 
-<code>
-Sample
-</code>
+<pre>
+ 
+</pre>
 
 * 200: Results
 
-<code>
-Sample
-</code>
-
-* 401: Authentication failure
-
-<code>
-Sample
-</code>
+<pre>
+[
+	{
+		"params":[
+			"param1",
+			"rap"
+		],
+		"results" : "result",
+		"valid":true
+	},
+	{
+		"params":[
+			"param1",
+			"rap"
+		],
+		"results" : "result",
+		"valid":true
+	}
+]
+</pre>
 
 * 404: Process not found
 
-<code>
-Sample
-</code>
+<pre>
+ 
+</pre>
 
 [Top](#contents)
 
@@ -190,15 +146,15 @@ Sample
 * Contains results from a previously sent process if such a process exists
 * Expects response of a new process
 
-<code>
-GET /botrequesthandler HTTP/1.1</br>
-Host: www.example.com</br>
-Content-Type: text/plain-text; charset=utf-8</br>
-Content-Length: length</br>
-Environment-Id: 0</br>
-Segment-Id: 0</br>
+<pre>
+GET /botrequesthandler HTTP/1.1
+Host: www.example.com
+Content-Type: text/plain-text; charset=utf-8
+Content-Length: length
+Environment-Id: 0
+Segment-Id: 0
 May contain traces of results
-</code>
+</pre>
 
 ### RTP Ping Response:
 

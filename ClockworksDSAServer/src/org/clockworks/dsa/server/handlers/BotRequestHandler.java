@@ -36,7 +36,7 @@ public class BotRequestHandler implements HttpHandler {
 	
 	@Override
 	public void handle(HttpExchange httpExchange) throws IOException {
-		System.out.println("Request received on /botrequesthandler");
+		
 		int statusCode = 0;
 		String responseBody = "";
 		Headers headers = httpExchange.getRequestHeaders();
@@ -120,12 +120,14 @@ public class BotRequestHandler implements HttpHandler {
 				}
 				else if(httpExchange.getRequestMethod().equalsIgnoreCase("GET"))
 				{
-					System.out.println("RTO received: Resetting timer");
+					
 					try{
 						resetTimerForIds(environmentId, segmentId);
-						statusCode = 201;
+						statusCode = 200;
+						System.out.println("200: Timer reset");
 					}catch(Exception e){
-						statusCode = 500;
+						statusCode = 404;
+						System.out.println("404: Segment Not Found");
 					}
 					
 				
@@ -138,6 +140,7 @@ public class BotRequestHandler implements HttpHandler {
 		catch(Exception e)
 		{
 			statusCode = 500;
+			System.out.println("500: Server Error");
 		}
 		
 		if(statusCode == 204)
@@ -166,7 +169,6 @@ public class BotRequestHandler implements HttpHandler {
 	}
 	private void createTimerForEnvironmentSegment(final EnvironmentSegment s){
 		
-		System.out.println("Timer started for segment");
 		TimeOut newTimer = new TimeOut(s);
 		newTimer.schedule(new TimerTask(){
 			
@@ -183,7 +185,7 @@ public class BotRequestHandler implements HttpHandler {
 	}
 	private void resetTimerForIds(int environmentId, int segmentId){
 		EnvironmentSegment s = deleteTimerForIds(environmentId, segmentId);
-		System.out.println("Deleted timer");
+		
 		createTimerForEnvironmentSegment(s);
 	}
 
