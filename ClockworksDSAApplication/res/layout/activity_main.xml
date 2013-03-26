@@ -5,10 +5,29 @@
     tools:context=".MainActivity" >
 
     <TextView
+        android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:text="@string/hello_world" />
+
+    <Button
+        android:id="@+id/startSimulationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="14dp"
+        android:text="@string/start_simulation" />
+
+    <Button
+        android:id="@+id/stopSimulationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/startSimulationButton"
+        android:layout_alignBottom="@+id/startSimulationButton"
+        android:layout_toRightOf="@+id/startSimulationButton"
+        android:text="@string/stop_simulation" />
 
 </RelativeLayout>
