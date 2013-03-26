@@ -21,6 +21,7 @@ tmp/**/*
 *.bak
 *.swp
 *~.nib
+*.py
 local.properties
 .classpath
 .settings/
