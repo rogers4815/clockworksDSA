@@ -27,7 +27,6 @@ public class EnvironmentHandler implements HttpHandler {
 	public void handle(HttpExchange httpExchange) throws IOException {
 		int statusCode = 0;
 		String responseBody = "";
-		System.out.println("Request received on /environmenthandler");
 		try
 		{
 			if (httpExchange.getRequestMethod().equalsIgnoreCase("POST")) {

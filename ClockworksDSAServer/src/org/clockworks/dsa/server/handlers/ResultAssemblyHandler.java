@@ -44,6 +44,7 @@ public class ResultAssemblyHandler implements HttpHandler {
 						responseBody = "Environment not found";
 					}else{
 						String results = environment.returnAssembledResult();
+			
 						if(results==null){
 							System.out.println("102: Process not ready");
 							statusCode = 102;
