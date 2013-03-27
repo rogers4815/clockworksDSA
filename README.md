@@ -169,6 +169,24 @@ May contain traces of results
 
 </pre>
 
+* 400: Bad Headers
+
+<pre>
+
+</pre>
+
+* 404: Process Not Found
+
+<pre>
+
+</pre>
+
+* 409: Conflict (duplicate results)
+
+<pre>
+
+</pre>
+
 [Top](#contents)
 
 ## RTO Ping (Reset Time Out)
@@ -186,7 +204,7 @@ Segment-Id: 0
 
 ### RTO Ping Response:
 
-* 200: Success
+* 201: Created new timer process
 
 <pre>
 
