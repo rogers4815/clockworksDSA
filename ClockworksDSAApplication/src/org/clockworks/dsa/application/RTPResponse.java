@@ -14,11 +14,12 @@ public class RTPResponse {
 		if(response != null){
 			try {
 				this.context = context;
-				this.filePath = context.getFilesDir().getPath().toString() + "simulation.py";
+				this.filePath = context.getFilesDir().getPath().toString() + "/simulation.py";
 				this.environmentID = environmentID;
 				this.segmentID = segmentID;
 				FileOutputStream file = new FileOutputStream(this.filePath);
 				file.write(response);
+				file.flush();
 				file.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

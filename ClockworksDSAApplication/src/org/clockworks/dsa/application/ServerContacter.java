@@ -43,6 +43,7 @@ public class ServerContacter {
 			sendConnection = (HttpURLConnection) serverURL.openConnection(); //throws IOException
 			sendConnection.setReadTimeout(10000);
 			sendConnection.setRequestMethod("POST");
+			sendConnection.setDoOutput(true);
 			
 			sendConnection.addRequestProperty("Environment-Id", environmentID);
 			sendConnection.addRequestProperty("Segment-Id", segmentID);
@@ -62,22 +63,24 @@ public class ServerContacter {
 	        int responseCode = sendConnection.getResponseCode();
 	        
 	        if(responseCode == 200){
+	        	Log.v("ServerContacter", "Response code 200");
 	        	environmentID = sendConnection.getHeaderField("Environment-Id");
 	        	segmentID = sendConnection.getHeaderField("Segment-Id");
 	        	InputStream input = sendConnection.getInputStream();
 		        
-		        byte[] in = {}, result = {};
+		        byte[] in = new byte[200], result = {};
 
-		        input.read(in);
-		        while(in.length != 0){
+		        int size = 0;
+		        size = input.read(in);
+		        while(size != -1){
 		        	byte[] copy = result;
 		        	//Add in to the end of result
-		        	result = new byte[copy.length + in.length];
+		        	result = new byte[copy.length + size];
 		        	System.arraycopy(copy, 0, result, 0, copy.length);
-		        	System.arraycopy(in, 0, result, copy.length, in.length);
-		        	in = new byte[0];
+		        	System.arraycopy(in, 0, result, copy.length, size);
+		        	size = input.read(in);
 		        }
-		        Log.v("Result", new String(result));
+		        Log.v("ServerContacter", new String(result));
 		        return new RTPResponse(responseCode, result, environmentID, segmentID, myContext);
 	        }
 	        else{

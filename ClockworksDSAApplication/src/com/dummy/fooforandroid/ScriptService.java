@@ -58,7 +58,8 @@ public class ScriptService extends ForegroundService {
 
 	private final static int NOTIFICATION_ID = NotificationIdFactory.create();
 	private final CountDownLatch mLatch = new CountDownLatch(1);
-	private final IBinder mBinder;
+
+	public final static String RESULT_ACTION = "RESULT_ACTION";
 
 	private InterpreterConfiguration mInterpreterConfiguration;
 	private RpcReceiverManager mFacadeManager;
@@ -84,12 +85,11 @@ public class ScriptService extends ForegroundService {
 
 	public ScriptService() {
 		super(NOTIFICATION_ID);
-		mBinder = new LocalBinder();
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		return mBinder;
+		return null;
 	}
 
 	@Override
@@ -170,7 +170,7 @@ public class ScriptService extends ForegroundService {
 					}
 				});
 	}
-	
+
 	RpcReceiverManager getRpcReceiverManager() throws InterruptedException {
 		mLatch.await();
 		if (mFacadeManager == null) { // Facade manage may not be available on
@@ -203,7 +203,8 @@ public class ScriptService extends ForegroundService {
 
 				thrd = new Thread(new Runnable() {
 					private BufferedReader r;
-					//private BufferedWriter out;
+
+					// private BufferedWriter out;
 
 					public void run() {
 						Log.d("Waiting for socket...");
@@ -214,8 +215,8 @@ public class ScriptService extends ForegroundService {
 									+ " " + sock.getLocalPort());
 							r = new BufferedReader(new InputStreamReader(
 									sock.getInputStream()));
-							//out = new BufferedWriter(new OutputStreamWriter(
-							//		sock.getOutputStream()));
+							// out = new BufferedWriter(new OutputStreamWriter(
+							// sock.getOutputStream()));
 
 							while (!Thread.interrupted()) {
 								final String data = r.readLine();
@@ -223,7 +224,24 @@ public class ScriptService extends ForegroundService {
 									// do something in ui thread with the
 									// data var
 									Log.d("Data: " + data);
-									updateNotification(data);
+
+									// Handle results
+									String[] splitData = data.split("##");
+									if (splitData.length > 1) {
+										if (splitData[0].equals("RESULTS")) {
+											Log.d("Got results back: "
+													+ splitData[0]);
+											Intent intent = new Intent();
+											intent.setAction(RESULT_ACTION);
+											intent.putExtra("DATAPASSED",
+													splitData[1]);
+											sendBroadcast(intent);
+										}
+										updateNotification("Results: "
+												+ splitData[1]);
+									} else {
+										updateNotification(data);
+									}
 								}
 							}
 						} catch (IOException e) {
