@@ -1,8 +1,8 @@
 package org.clockworks.dsa.server.handlers;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
@@ -10,10 +10,8 @@ import java.util.TimerTask;
 
 import org.clockworks.dsa.server.environment.Environment;
 import org.clockworks.dsa.server.environment.EnvironmentSegment;
-import org.clockworks.dsa.server.pings.RTPPing;
 import org.clockworks.dsa.server.singletons.CodeQueue;
 import org.clockworks.dsa.server.singletons.EnvironmentList;
-import org.clockworks.dsa.server.singletons.PingQueue;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -36,7 +34,7 @@ public class BotRequestHandler implements HttpHandler {
 	
 	@Override
 	public void handle(HttpExchange httpExchange) throws IOException {
-		System.out.println("Request received on /botrequesthandler");
+		
 		int statusCode = 0;
 		String responseBody = "";
 		Headers headers = httpExchange.getRequestHeaders();
@@ -58,11 +56,21 @@ public class BotRequestHandler implements HttpHandler {
 				if(httpExchange.getRequestMethod().equalsIgnoreCase("POST"))
 				{
 					
-					if(environmentId!=0&&segmentId!=0)
+					if(environmentId!=0)
 					{
 						System.out.println("Looking for environment");
-						InputStream resultStream = httpExchange.getRequestBody();
-						String results = resultStream.toString();
+
+						BufferedReader br = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
+						
+						StringBuilder sb = new StringBuilder();
+						String line;
+						
+						while ((line = br.readLine()) != null) {
+							sb.append(line + '\n');
+						}
+						br.close();
+		
+						String results = sb.toString();
 						
 						
 						// log results to environment
@@ -73,7 +81,14 @@ public class BotRequestHandler implements HttpHandler {
 							responseBody = "Environment Not Found.";
 						}else{
 							
-							int resultInputStatusCode = e.completeSegmentWithResults(results, segmentId);
+							List<String> validHeader = headers.get("Script-Valid");
+							boolean valid = true;
+							if(validHeader!=null)
+							{
+								valid = Boolean.parseBoolean(validHeader.get(0));
+							}
+							
+							int resultInputStatusCode = e.completeSegmentWithResults(results, segmentId, valid);
 							if(resultInputStatusCode==404){
 								System.out.println("404: Segment Not Found");
 								statusCode = 404;
@@ -84,17 +99,13 @@ public class BotRequestHandler implements HttpHandler {
 								responseBody = "Clash of results.";
 							}else{
 								deleteTimerForIds(environmentId, segmentId);
+								System.out.println("Results received:"+results.toString());
 							}
 						}
-					}else if(environmentId!=0||segmentId!=0){
-						System.out.println("400: Bad Headers");
-						statusCode = 400;
-						responseBody = "Bad Headers.";
 					}
 				
 				
-					//queue ping
-					PingQueue.sharedInstance().addToQueue(new RTPPing(httpExchange));
+					
 					if(statusCode==0)
 					{
 						if(CodeQueue.sharedInstance().isEmpty())
@@ -120,12 +131,14 @@ public class BotRequestHandler implements HttpHandler {
 				}
 				else if(httpExchange.getRequestMethod().equalsIgnoreCase("GET"))
 				{
-					System.out.println("RTO received: Resetting timer");
+					
 					try{
 						resetTimerForIds(environmentId, segmentId);
-						statusCode = 201;
+						statusCode = 200;
+						System.out.println("200: Timer reset");
 					}catch(Exception e){
-						statusCode = 500;
+						statusCode = 404;
+						System.out.println("404: Segment Not Found");
 					}
 					
 				
@@ -138,6 +151,7 @@ public class BotRequestHandler implements HttpHandler {
 		catch(Exception e)
 		{
 			statusCode = 500;
+			System.out.println("500: Server Error");
 		}
 		
 		if(statusCode == 204)
@@ -166,7 +180,6 @@ public class BotRequestHandler implements HttpHandler {
 	}
 	private void createTimerForEnvironmentSegment(final EnvironmentSegment s){
 		
-		System.out.println("Timer started for segment");
 		TimeOut newTimer = new TimeOut(s);
 		newTimer.schedule(new TimerTask(){
 			
@@ -183,7 +196,7 @@ public class BotRequestHandler implements HttpHandler {
 	}
 	private void resetTimerForIds(int environmentId, int segmentId){
 		EnvironmentSegment s = deleteTimerForIds(environmentId, segmentId);
-		System.out.println("Deleted timer");
+		
 		createTimerForEnvironmentSegment(s);
 	}
 

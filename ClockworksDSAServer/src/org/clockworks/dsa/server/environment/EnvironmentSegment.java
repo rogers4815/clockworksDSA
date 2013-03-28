@@ -12,6 +12,7 @@ public class EnvironmentSegment {
 	private int parentId;
 	private int id;
 	private String results;
+	private boolean valid;
 
 	/**
 	 * Constructor
@@ -44,7 +45,7 @@ public class EnvironmentSegment {
 
 			String line;
 			while ((line = br.readLine()) != null) {
-				sb.append(line);
+				sb.append(line+'\n');
 			}
 			br.close();
 			return sb.toString();
@@ -61,10 +62,11 @@ public class EnvironmentSegment {
 	 * @param results
 	 * @return
 	 */
-	public int insertResults(String results) {
+	public int insertResults(String results, boolean valid) {
 		if (this.results != null) { // Where a duplicate has been received
 			return 409;
 		} else {
+			this.valid = valid;
 			this.results = results;
 			return 200;
 		}
@@ -85,11 +87,22 @@ public class EnvironmentSegment {
 	public int getParentId() {
 		return this.parentId;
 	}
+	
+	public boolean isValid(){
+		return valid;
+	}
 
 	public String parametersToString() {
-		String result = "";
+		String result = "[";
 		for (int i = 0; i < parameters.length; i++)
-			result += parameters[i] + ";";
+		{
+			result += "\""+parameters[i]+"\"";
+			if(i<parameters.length-1)
+			{
+				result += ",";
+			}
+		}
+		result += "]";
 		return result;
 	}
 
