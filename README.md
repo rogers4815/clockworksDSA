@@ -9,7 +9,6 @@ Clockworks distributed simulation app for android devices
   * [User Result Assembly](#user-result-assembly)
   * [Bot Interface Listener](#bot-interface-listener)
   * [Timer / Timeout Handlers](#timer--timeout-handlers)
-  * [Database Schema](#database-schema)
 * [Bot](#bot)
   * [Bot Network Interface](#bot-network-interface)
 * [API Spec](#api-spec)
@@ -17,27 +16,22 @@ Clockworks distributed simulation app for android devices
   * [RTP Ping](#rtp-ping-ready-to-process)
   * [RTO Ping](#rto-ping-reset-time-out)
   * [Environment](#environment)
+  * [Environment Segment](#environment-segment)
 * [Appendix](#appendix)
   * [Flowchart Key](#flowchart-key)
-  * [Ping Queue](#ping-queue)
   * [Code Queue](#code-queue)
 
 #Server
 
 ## User Environment Listener
 
-* Listen for [environments](#environment) from users over HTTPS, authentication is optional
-* Get number of recent devices from [Ping Queue](#ping-queue).
-* Get space in [Code Queue](#code-queue).
-* Split code based on number of available devices, (i.e. split amout is minimum of: pings received in the previous allowed window, space in queue and how much the code can be split) and add to [code queue](#code-queue)
+* Get [environments](#environment) from users over HTTP.
+* Split code into all permutations of variable categories given and add to [Code Queue](#code-queue)
 * Respond to users with [rejects/acknowledgements](#environment-response)
 
-### Database accesses:
-* User authentication
 
 ### Shared variable accesses:
-* [Ping queue](#ping-queue): Pop off expired and read size
-* [Code queue](#code-queue): Check if full and add to Queue
+* [Code queue](#code-queue): Add to Queue
 
 [Top](#contents)
 
@@ -45,14 +39,10 @@ Clockworks distributed simulation app for android devices
 
 ## User Result Assembly
 
-* Listen for [WOP Pings](#wop-ping-waiting-on-process) from users over HTTPS, authentication is optional
-* Check if database complete with all results
+* Listen for [WOP Pings](#wop-ping-waiting-on-process) from users over HTTP.
+* Check if [Environment](#environment) is complete with all results
 * Respond to users with [rejects/acknowledgement/compiled results](#wop-ping-response)
 
-
-### Database accesses:
-* User authentication
-* Results: read/purge
 
 [Top](#contents)
 
@@ -62,82 +52,34 @@ Clockworks distributed simulation app for android devices
 
 * Listen for HTTP request from devices
 * If [RTP Ping](#rtp-ping-ready-to-process): 
- * Strip any results from ping and enter in database
- * Log to [Ping Queue](#ping-queue)
+ * Strip any results from ping and add to [segment](#environment-segment)
  * [Respond](#rtp-response)
 * If [RTO Ping](#rto-ping-reset-time-out): 
- * Restart the processes [time out](#timer--timeout-handlers)
-
-### Database accesses:
-* Result logging: write
+ * Restart the segment's [timer](#timer--timeout-handlers)
 
 ### Shared variable accesses:
-* [Ping Queue](#ping-queue): Add to Queue
 * [Code Queue](#code-queue): Take off Queue if available
 
 [Top](#contents)
 
 ## Timer / Timeout handlers
 
-* One for each process of the simulation
+* One process for each segment of the simulation [environments](#environment)
 
 ### Shared variable accesses:
 
-* [Code Queue](#code-queue): Add to Queue if time out reached 
+* [Code Queue](#code-queue): Re-add segment to Queue if time out interval reached 
 
 [Top](#contents)
 
 ![SNAIL](WikiImages/ServerNetworkAppInterfaceListenerSNAIL.jpeg?raw=true)
 
-## Database Schema
-### Authentication
-<table>
- <tr>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
- </tr>
-</table>
-### Environment
-<table>
- <tr>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
- </tr>
-</table>
-### Process
-<table>
- <tr>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
-  <td>
-   Sample
-  </td>
- </tr>
-</table>
-
-[Top](#contents)
-
 # Bot
 
 ## Bot Network Interface
+
+* [Ping](#rtp-ping-ready-to-process) server to indicate readiness to process
+* Process python script
 
 [Top](#contents)
 
@@ -147,41 +89,52 @@ Clockworks distributed simulation app for android devices
 
 ## WOP Ping (Waiting On Process)
 
-* Sent from the user after every t seconds to check if the results have been collected
+* Sent from the user after every t seconds to check whether all results have been collated
 
-<code>
-GET /resultassemblyhandler HTTP/1.1</br>
-Host: www.example.com</br>
-Content-Type: text/plain-text; charset=utf-8</br>
-Content-Length: length</br>
+<pre>
+GET /resultassemblyhandler HTTP/1.1
+Host: www.example.com
+Content-Type: text/plain-text; charset=utf-8
+Content-Length: length
 Environment-Id: 0
-</code>
+</pre>
 
 ### WOP Ping Response:
 
 * 102: Process Not ready
 
-<code>
-Sample
-</code>
+<pre>
+ 
+</pre>
 
 * 200: Results
 
-<code>
-Sample
-</code>
-
-* 401: Authentication failure
-
-<code>
-Sample
-</code>
+<pre>
+[
+	{
+		"params":[
+			"param1",
+			"rap"
+		],
+		"results" : "result",
+		"script-valid":true
+	},
+	{
+		"params":[
+			"param1",
+			"rap"
+		],
+		"results" : "result",
+		"valid":true
+	}
+]
+</pre>
 
 * 404: Process not found
 
-<code>
-Sample
-</code>
+<pre>
+ 
+</pre>
 
 [Top](#contents)
 
@@ -190,64 +143,93 @@ Sample
 * Contains results from a previously sent process if such a process exists
 * Expects response of a new process
 
-<code>
-GET /botrequesthandler HTTP/1.1</br>
-Host: www.example.com</br>
-Content-Type: text/plain-text; charset=utf-8</br>
-Content-Length: length</br>
-Environment-Id: 0</br>
-Segment-Id: 0</br>
+<pre>
+GET /botrequesthandler HTTP/1.1
+Host: www.example.com
+Content-Type: text/plain-text; charset=utf-8
+Content-Length: length
+Environment-Id: 0
+Segment-Id: 0
 May contain traces of results
-</code>
+</pre>
 
 ### RTP Ping Response:
 
 * 200: Response with code to run
 
-<code>
-Sample Response of this type here
-</code>
+<pre>
+{
+	"script" : "script"
+}
+</pre>
 
 * 204: No code available at this time from Queue
 
-<code>
-Sample Response of this type here
-</code>
+<pre>
+
+</pre>
+
+* 400: Bad Headers
+
+<pre>
+
+</pre>
+
+* 404: Process Not Found
+
+<pre>
+
+</pre>
+
+* 409: Conflict (duplicate results)
+
+<pre>
+
+</pre>
 
 [Top](#contents)
 
 ## RTO Ping (Reset Time Out)
 
-* Tell the server to reset its process timer for the indicated process
+* Tell the server to reset its process timer for the indicated segment
 
-<code>
+<pre>
 POST /botrequesthandler HTTP/1.1</br>
 Host: www.example.com</br>
 Content-Type: text/plain-text; charset=utf-8</br>
 Content-Length: length</br>
 Environment-Id: 0</br>
 Segment-Id: 0
-</code>
+</pre>
 
 ### RTO Ping Response:
 
-* 200: Success
+* 201: Created new timer process
 
-<code>
-Sample
-</code>
+<pre>
+
+</pre>
 
 * 404: Process Not Found
 
-<code>
-Sample
-</code>
+<pre>
+
+</pre>
 
 [Top](#contents)
 
 ## Environment
 
-### Environment Response:
+* The user-defined simulation
+* Creation defines the [Environment Segments](#environment-segment) for this simulation
+
+[Top](#contents)
+
+## Environment Segment
+
+* Segment of a simulation
+* Sent to bot as string representing a file contents unifying script and relevant parameters
+* Returned to user as string of results
 
 [Top](#contents)
 
@@ -258,17 +240,7 @@ Sample
 * Yellow: Start
 * Green: Data received
 * Red: Response sent
-* Blue: Database access
-* Black: Scary Stuff
-
-[Top](#contents)
-
-## Ping Queue
-
-* On read:
- * Pop expired pings of the top of the Queue and update size, then read size
-* On write:
- * Simply add ping log to the Queue
+* Black: Segments created
 
 [Top](#contents)
 

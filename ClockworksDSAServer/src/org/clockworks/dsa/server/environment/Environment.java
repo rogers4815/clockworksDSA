@@ -118,10 +118,10 @@ public class Environment {
 	 * @param id
 	 * @return
 	 */
-	public int completeSegmentWithResults(String results, int id){
+	public int completeSegmentWithResults(String results, int id, boolean valid){
 		for(int i= 0; i<segments.length; i++){
 			if(segments[i].getId()==id){
-				return segments[i].insertResults(results);
+				return segments[i].insertResults(results,valid);
 			}
 		}
 		return 400; // Out of range, some sort of error
@@ -161,9 +161,24 @@ public class Environment {
 		if(!isComplete()){
 			return null;
 		}
-		String result = "";
+		String result = "[";
 		for (int i = 0; i < segments.length; i++) {
-			result += segments[i].parametersToString() + ";" + segments[i].getResults();
+			result += "{ \"params\" :";
+			
+			result += segments[i].parametersToString();
+			result += ", \"results\":\""+segments[i].getResults()+"\",";
+			result += "\"valid\":"+segments[i].isValid()+"}";
+			if(i<segments.length-1)
+			{
+				result += ",";
+			}
+		}
+		result += "]";
+		
+		String[] resultBroken = result.split("\n");
+		result = "";
+		for(int i = 0; i <resultBroken.length; i++){
+			result += resultBroken[i];
 		}
 		return result;
 	}
