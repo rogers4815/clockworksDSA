@@ -27,9 +27,11 @@ public class EnvironmentHandler implements HttpHandler {
 	public void handle(HttpExchange httpExchange) throws IOException {
 		int statusCode = 0;
 		String responseBody = "";
-		try
-		{
+		try {
+		    	// POST request indicates attempt to send a new Environment
 			if (httpExchange.getRequestMethod().equalsIgnoreCase("POST")) {
+			    
+			    	// Assign the new Environment a unique ID, based on its timestamp
 				int envId;
 				do {
 					envId = (int) System.currentTimeMillis();
@@ -37,6 +39,7 @@ public class EnvironmentHandler implements HttpHandler {
 				PrintStream out = null;
 				try {
 					
+				    	// Parse the stream from the HttpExchange into a string
 					BufferedReader br = new BufferedReader(new InputStreamReader(
 							httpExchange.getRequestBody()));
 					StringBuilder sb = new StringBuilder();
@@ -46,22 +49,25 @@ public class EnvironmentHandler implements HttpHandler {
 					}
 					br.close();
 	
+					// Split this string into part representing script and part representing parameters
 					String requestbodyString = sb.toString();
-					//System.out.println(requestbodyString);
 					String[] parameters = requestbodyString.split(DELIMITER);
-					//System.out.println(parameters[0]);
-					//System.out.println(parameters[1]);
+
 					File script = new File(envId + "-simulation.py");
 					out = new PrintStream(new FileOutputStream(script));
 					out.print(parameters[1]);
 	
+					// Create a new Environment based on this information and get its segments
 					Environment env = new Environment(envId, parameters[0], script);
 					EnvironmentList.sharedInstance().addEnvironment(env);
 					EnvironmentSegment[] segments = env.getSegments(0,env.getSegmentCount());
 					
+					// Add the new Environment's segments to the Code Queue
 					for (EnvironmentSegment s : segments) {
 						CodeQueue.sharedInstance().addToQueue(s);
 					}
+					
+					// Indicate to user that Environment was received successfully
 					System.out.println(""+segments.length+" segments added to queue");
 					statusCode = 200;
 					responseBody = "" + envId;
@@ -78,7 +84,9 @@ public class EnvironmentHandler implements HttpHandler {
 
 				}
 	
-			} else {
+			}
+			// Request is something other than a POST and thus invalid
+			else {
 				statusCode = 405;
 				System.out.println("405 : Method not allowed");
 			}
@@ -88,6 +96,7 @@ public class EnvironmentHandler implements HttpHandler {
 			statusCode = 500;
 		}
 		
+		// Respond appropriately to user
 		httpExchange.sendResponseHeaders(statusCode, responseBody.length());
 		httpExchange.getResponseBody().write(responseBody.getBytes());
 		httpExchange.close();
