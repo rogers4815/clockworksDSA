@@ -13,6 +13,7 @@ public class Environment {
 	
 	/**
 	 * Constructor that populates ALL member variables including segments.
+	 * @param id
 	 * @param parameters
 	 * @param pythonScript Must be passed after applying .setReadOnly() on the file object
 	 */
@@ -49,7 +50,6 @@ public class Environment {
 			}
 			br.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -81,7 +81,6 @@ public class Environment {
 					out.println(lines.get(j));
 				}
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}finally{
 				out.close();
@@ -116,6 +115,7 @@ public class Environment {
 	 * Attempt to associate a particular segment of the simulation with its results
 	 * @param results
 	 * @param id
+	 * @param valid
 	 * @return
 	 */
 	public int completeSegmentWithResults(String results, int id, boolean valid){
@@ -124,9 +124,12 @@ public class Environment {
 				return segments[i].insertResults(results,valid);
 			}
 		}
-		return 400; // Out of range, some sort of error
+		return 400; // Out of range, error
 	}
 	
+	/**
+	 * Assorted public accessor methods
+	 */
 	public int getId(){
 		return this.id;
 	}
@@ -153,8 +156,9 @@ public class Environment {
 	}
 	
 	/**
-	 * Return a single object consisting of the the results from all the simulation
+	 * Return a single string consisting of the the results from all the simulation
 	 * segments combined
+	 * String returned will be parseable as JSON
 	 * @return
 	 */
 	public String returnAssembledResult(){
@@ -184,7 +188,7 @@ public class Environment {
 	}
 	
 	/**
-	 * Given a 2D string array, creates all perumtaions of the strings and
+	 * Given a 2D string array, creates all permutations of the strings and
 	 * returns it as a new 2d String array.
 	 * 
 	 * @param toPermute
