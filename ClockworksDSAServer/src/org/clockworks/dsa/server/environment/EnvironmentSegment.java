@@ -71,6 +71,10 @@ public class EnvironmentSegment {
 			return 200;
 		}
 	}
+	
+	/*
+	 * Assorted public accessor methods
+	 */
 
 	public boolean isComplete() {
 		return this.results != null;
@@ -92,6 +96,11 @@ public class EnvironmentSegment {
 		return valid;
 	}
 
+	/**
+	 * Return a single string consisting of a list of the parameters associated with this segment
+	 * String returned will be parseable as JSON
+	 * @return
+	 */
 	public String parametersToString() {
 		String result = "[";
 		for (int i = 0; i < parameters.length; i++)
