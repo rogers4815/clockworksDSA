@@ -35,7 +35,7 @@ Clockworks distributed simulation app for android devices
 
 [Top](#contents)
 
-![SNUIL](WikiImages/ServerNetworkUserInterfaceListenerSNUIL.jpeg?raw=true)
+![SNUIL](WikiImages/ServerNetworkUserInterfaceListenerSNUIL.png?raw=true)
 
 ## User Result Assembly
 
@@ -46,7 +46,7 @@ Clockworks distributed simulation app for android devices
 
 [Top](#contents)
 
-![SNURAL](WikiImages/ServerNetworkUserResultAssemblyLine.jpeg?raw=true)
+![SNURAL](WikiImages/ServerNetworkUserResultAssemblyLine.png?raw=true)
 
 ## Bot Interface Listener
 
