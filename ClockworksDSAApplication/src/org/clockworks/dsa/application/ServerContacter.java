@@ -48,6 +48,7 @@ public class ServerContacter {
 			sendConnection.addRequestProperty("Environment-Id", environmentID);
 			sendConnection.addRequestProperty("Segment-Id", segmentID);
 
+			// Send results to server if they exist
 			OutputStream output = sendConnection.getOutputStream();
 			if(results != null){
 				byte[] byteResults = results.getBytes();
@@ -59,9 +60,11 @@ public class ServerContacter {
 				output.close();
 			}
 	        
+	        // Fetch response from server
 	        sendConnection.connect();
 	        int responseCode = sendConnection.getResponseCode();
 	        
+	        // If there is a simulation to run
 	        if(responseCode == 200){
 	        	Log.v("ServerContacter", "Response code 200");
 	        	environmentID = sendConnection.getHeaderField("Environment-Id");
@@ -71,6 +74,7 @@ public class ServerContacter {
 		        byte[] in = new byte[200], result = {};
 
 		        int size = 0;
+		        // Read in the response in groups of bytes as they are received
 		        size = input.read(in);
 		        while(size != -1){
 		        	byte[] copy = result;
