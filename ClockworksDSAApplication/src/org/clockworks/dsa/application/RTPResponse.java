@@ -15,8 +15,10 @@ public class RTPResponse {
 			try {
 				this.context = context;
 				this.filePath = context.getFilesDir().getPath().toString() + "/simulation.py";
+				// save environment and segment IDs of current simulation
 				this.environmentID = environmentID;
 				this.segmentID = segmentID;
+				// save simulation script to a file
 				FileOutputStream file = new FileOutputStream(this.filePath);
 				file.write(response);
 				file.flush();
