@@ -43,14 +43,20 @@ public class UserSubmission {
 			}
 			WOPResponse = sendWOPPing();
 		}
-
-		if (WOPResponse == 401) {
+		
+		
+		if (WOPResponse == 200){
+			System.out.println("Simulation complete");
+		}
+		else if (WOPResponse == 401) {
 			System.err.println("Server response 401: Authentication failure");
-		} else if (WOPResponse == 404) {
+		} 
+		else if (WOPResponse == 404) {
 			System.err.println("Server response 404: Environment not found");
-		} else if (WOPResponse == 0) {
-			System.err
-					.println("Something went wrong. The server may not be contactable");
+		} 
+		else {
+			System.err.println("Something went wrong. The server may not be contactable");
+			System.err.println("WOP ping response " + WOPResponse);
 		}
 
 		return resultsFilePath; // return filepath of results file
@@ -76,18 +82,19 @@ public class UserSubmission {
 			if (response == 200) {
 				DataInputStream input = new DataInputStream(
 						serverConnection.getInputStream());
-				byte[] in = null, result = null;
+				byte[] in = new byte[500], result = {};
 
-				input.read(in);
-				while (in != null) {
+				int size = input.read(in);
+				while (size != -1) {
 					byte[] copy = result;
 					// Add in to the end of result
-					result = new byte[copy.length + in.length];
+					result = new byte[copy.length + size];
 					System.arraycopy(copy, 0, result, 0, copy.length);
-					System.arraycopy(in, 0, result, copy.length, in.length);
+					System.arraycopy(in, 0, result, copy.length, size);
+					size = input.read(in);
 				}
 				BufferedOutputStream file = new BufferedOutputStream(
-						new FileOutputStream("results.dsa"));
+						new FileOutputStream("results.json"));
 				file.write(result);
 				file.flush();
 				file.close();
@@ -142,7 +149,7 @@ public class UserSubmission {
 				br.close();
 
 				line = sb.toString();
-				System.err.print(line);
+				System.out.println(line);
 				environmentID = Integer.parseInt(line);
 
 			}
@@ -156,12 +163,6 @@ public class UserSubmission {
 			e.printStackTrace();
 		}
 		return -1;
-	}
-
-	public static void main(String[] args) {
-
-		UserSubmission user = new UserSubmission("127.0.0.1", 50080);
-		user.runSimulation("simulation.py");
 	}
 
 }
