@@ -10,6 +10,10 @@ import org.clockworks.dsa.server.handlers.ResultAssemblyHandler;
 
 import com.sun.net.httpserver.HttpServer;
 
+/**
+ * Main class to run the Simulation Distribution Server
+ *
+ */
 public class Main {
 
 	/**
@@ -17,7 +21,7 @@ public class Main {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		InetSocketAddress addr = new InetSocketAddress(50080);
+	    InetSocketAddress addr = new InetSocketAddress(50080);
 	    HttpServer server = HttpServer.create(addr, 1000);
 
 	    server.createContext("/botrequesthandler", new BotRequestHandler());

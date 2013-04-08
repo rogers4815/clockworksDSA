@@ -52,7 +52,7 @@ Clockworks distributed simulation app for android devices
 
 * Listen for HTTP request from devices
 * If [RTP Ping](#rtp-ping-ready-to-process): 
- * Strip any results from ping and add to Segment
+ * Strip any results from ping and add to [segment](#environment-segment)
  * [Respond](#rtp-response)
 * If [RTO Ping](#rto-ping-reset-time-out): 
  * Restart the segment's [timer](#timer--timeout-handlers)
@@ -64,7 +64,7 @@ Clockworks distributed simulation app for android devices
 
 ## Timer / Timeout handlers
 
-* One process for each segment of the simulation [Environment](#environment)
+* One process for each segment of the simulation [environments](#environment)
 
 ### Shared variable accesses:
 
@@ -169,6 +169,24 @@ May contain traces of results
 
 </pre>
 
+* 400: Bad Headers
+
+<pre>
+
+</pre>
+
+* 404: Process Not Found
+
+<pre>
+
+</pre>
+
+* 409: Conflict (duplicate results)
+
+<pre>
+
+</pre>
+
 [Top](#contents)
 
 ## RTO Ping (Reset Time Out)
@@ -186,7 +204,7 @@ Segment-Id: 0
 
 ### RTO Ping Response:
 
-* 200: Success
+* 201: Created new timer process
 
 <pre>
 
@@ -210,6 +228,8 @@ Segment-Id: 0
 ## Environment Segment
 
 * Segment of a simulation
+* Sent to bot as string representing a file contents unifying script and relevant parameters
+* Returned to user as string of results
 
 [Top](#contents)
 
