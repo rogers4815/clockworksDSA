@@ -39,6 +39,8 @@ public class ApplicationService extends IntentService {
 			environmentID = null;
 			segmentID = null;
 			while (!done) {
+				// If there are no results to hand back, wait before sending next
+				// RTP ping. This is to prevent flooding the server
 				if (simulationResults == null) {
 					try {
 						Thread.sleep(10000);
@@ -48,6 +50,8 @@ public class ApplicationService extends IntentService {
 					}
 				}
 
+				// Wait until the device is on WiFi before trying to send
+				// the next RTP ping
 				while (!requester.onAllowedNetwork()) {
 					try {
 						Thread.sleep(100);
@@ -61,18 +65,21 @@ public class ApplicationService extends IntentService {
 					Log.v(TAG, "Sending simulation results: "
 							+ simulationResults);
 				}
+				
+				// Send RTP ping to server, along with any pending results
 				RTPResponse serverResponse = requester.sendRTPPing(
 						simulationResults, environmentID, segmentID);
 				simulationResults = null;
 				simulationDone = false;
 				environmentID = serverResponse.getEnvironmentID();
 				segmentID = serverResponse.getSegmentID();
+				
+				// if simulation received
 				if (serverResponse.getResponseCode() == 200) {
 					String simulationPath = serverResponse
 							.getSimulationFilePath();
 					Log.v("Reponse", simulationPath);
 
-					// TODO Create thread for processing the python script
 					Log.d(TAG, "File path: "
 							+ getFilesDir().getPath().toString()
 							+ "/simulation.py");
@@ -82,19 +89,23 @@ public class ApplicationService extends IntentService {
 					startService(serviceIntent);
 
 					boolean abort = false;
-					// TODO while not finished processing and abort is false
+
+					// run simulation
 					while (!abort && !simulationDone) {
 						Log.v(TAG, "SimulationDone: "+simulationDone);
+						// wait 1 second before sending next RTO ping
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+						// if on Wifi send RTO ping to server
 						if (requester.onAllowedNetwork()) {
 							Log.v("RTO", "Sending RTO ping");
 							requester.sendRTOPing(environmentID, segmentID);
-						} else {
+						}
+						else { // else abort running the script
 							abort = true;
 						}
 					}
