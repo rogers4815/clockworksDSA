@@ -93,7 +93,7 @@ public UserSubmission(String hostAddress, int port)
 # Bot
 ##Dependancies
 * Android 2.1
-* Python 2.8
+* Python 2.7
 
 ##Configuration
 * Create instance of DSAMain
