@@ -22,6 +22,8 @@ Clockworks distributed simulation app for android devices
   * [Code Queue](#code-queue)
 
 #Server
+## Dependancies
+* Java 6
 
 ## User Environment Listener
 
@@ -52,7 +54,7 @@ Clockworks distributed simulation app for android devices
 
 * Listen for HTTP request from devices
 * If [RTP Ping](#rtp-ping-ready-to-process): 
- * Strip any results from ping and add to [segment](#environment-segment)
+ * Strip any results from ping and add to Segment
  * [Respond](#rtp-response)
 * If [RTO Ping](#rto-ping-reset-time-out): 
  * Restart the segment's [timer](#timer--timeout-handlers)
@@ -64,7 +66,7 @@ Clockworks distributed simulation app for android devices
 
 ## Timer / Timeout handlers
 
-* One process for each segment of the simulation [environments](#environment)
+* One process for each segment of the simulation [Environment](#environment)
 
 ### Shared variable accesses:
 
@@ -74,7 +76,32 @@ Clockworks distributed simulation app for android devices
 
 ![SNAIL](WikiImages/ServerNetworkAppInterfaceListenerSNAIL.jpeg?raw=true)
 
+#Front End
+##Dependancies
+* Java 6
+
+##Configuration
+* Create instance of UserSubmission
+<pre>
+public UserSubmission(String hostAddress, int port)
+</pre>
+
+* Call .runSimulation(String filepath) on the instance of UserSubmission, where the filepath is your simulation
+
+* The framework will save the results once available to the root directory of the app as results.json
+
 # Bot
+##Dependancies
+* Android 2.1
+* Python 2.8
+
+##Configuration
+* Create instance of DSAMain
+<pre>
+public DSAMain(String hostAddress,Context context)
+</pre>
+
+* Call .run() on the instance of DSAMain
 
 ## Bot Network Interface
 
@@ -103,9 +130,6 @@ Environment-Id: 0
 
 * 102: Process Not ready
 
-<pre>
- 
-</pre>
 
 * 200: Results
 
@@ -132,9 +156,7 @@ Environment-Id: 0
 
 * 404: Process not found
 
-<pre>
- 
-</pre>
+
 
 [Top](#contents)
 
@@ -157,35 +179,10 @@ May contain traces of results
 
 * 200: Response with code to run
 
-<pre>
-{
-	"script" : "script"
-}
-</pre>
+
 
 * 204: No code available at this time from Queue
 
-<pre>
-
-</pre>
-
-* 400: Bad Headers
-
-<pre>
-
-</pre>
-
-* 404: Process Not Found
-
-<pre>
-
-</pre>
-
-* 409: Conflict (duplicate results)
-
-<pre>
-
-</pre>
 
 [Top](#contents)
 
@@ -204,17 +201,12 @@ Segment-Id: 0
 
 ### RTO Ping Response:
 
-* 201: Created new timer process
+* 200: Success
 
-<pre>
-
-</pre>
 
 * 404: Process Not Found
 
-<pre>
 
-</pre>
 
 [Top](#contents)
 
@@ -228,8 +220,6 @@ Segment-Id: 0
 ## Environment Segment
 
 * Segment of a simulation
-* Sent to bot as string representing a file contents unifying script and relevant parameters
-* Returned to user as string of results
 
 [Top](#contents)
 
